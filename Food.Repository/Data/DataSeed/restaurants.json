@@ -1,0 +1,27 @@
+[
+    {
+        "Name": "Rosto",
+        "Address": "123 Main Street, Heliopolis, Cairo",
+        "DefaultDeliveryCost": 25.00
+    },
+    {
+        "Name": "Primos Pizza",
+        "Address": "45 Tahrir Street, Dokki, Giza",
+        "DefaultDeliveryCost": 30.00
+    },
+    {
+        "Name": "KFC Egypt",
+        "Address": "Mall of Egypt, 6th of October City",
+        "DefaultDeliveryCost": 35.00
+    },
+    {
+        "Name": "Al Tazaj",
+        "Address": "77 Nile Street, Maadi, Cairo",
+        "DefaultDeliveryCost": 20.00
+    },
+    {
+        "Name": "Mandarin Kitchen",
+        "Address": "12 Corniche El Nil, Downtown Cairo",
+        "DefaultDeliveryCost": 28.50
+    }
+]

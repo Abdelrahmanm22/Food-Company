@@ -47,9 +47,13 @@ namespace Food.APIs
             try
             {
                 var DbContext = Services.GetRequiredService<FoodContext>();
-                await DbContext.Database.MigrateAsync();
+                await DbContext.Database.MigrateAsync(); //Udpate-Database on Startup
+
+                #region Data Seeding
+                await FoodContextSeed.SeedAsync(DbContext);
+                #endregion
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Error(ex, "An error occurred while applying database migrations.");
             }

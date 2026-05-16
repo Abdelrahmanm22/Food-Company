@@ -14,4 +14,8 @@
     <ProjectReference Include="..\Food.Domain\Food.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\DataSeed\" />
+  </ItemGroup>
+
 </Project>
