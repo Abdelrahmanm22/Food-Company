@@ -1,0 +1,6 @@
+@Food.APIs_HostAddress = http://localhost:5290
+
+GET {{Food.APIs_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
