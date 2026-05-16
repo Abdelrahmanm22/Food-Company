@@ -22,6 +22,11 @@ obj/
 publish/
 wwwroot/uploads/
 
+# ==================== LOGS ====================
+Logs/
+*.log
+log-*.txt
+
 # Rider
 .idea/
 

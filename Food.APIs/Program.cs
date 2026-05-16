@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Food.Repository.Data;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Food.APIs
 {
@@ -9,6 +10,19 @@ namespace Food.APIs
     {
         public static async Task Main(string[] args)
         {
+            // Configure Serilog
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Information()
+                .WriteTo.Console()                    // Keep console for development 
+                .WriteTo.File(
+                    path: "Logs/log-.txt",            // Daily file name pattern
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 30,       // Keep last 30 days
+                    fileSizeLimitBytes: 10 * 1024 * 1024, // 10MB per file
+                    rollOnFileSizeLimit: true,
+                    shared: true,
+                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+                .CreateLogger();
             var builder = WebApplication.CreateBuilder(args);
 
             #region Configure Services
@@ -30,8 +44,15 @@ namespace Food.APIs
             #region Update-Database-on-Startup
             using var Scope = app.Services.CreateScope();
             var Services = Scope.ServiceProvider;
-            var DbContext = Services.GetRequiredService<FoodContext>();
-            await DbContext.Database.MigrateAsync();
+            try
+            {
+                var DbContext = Services.GetRequiredService<FoodContext>();
+                await DbContext.Database.MigrateAsync();
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, "An error occurred while applying database migrations.");
+            }
             #endregion
 
             #region Configure the Http request pipeline.
