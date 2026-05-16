@@ -1,5 +1,7 @@
 
 using System.Threading.Tasks;
+using Food.Domain.Repositories;
+using Food.Repository;
 using Food.Repository.Data;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -36,7 +38,7 @@ namespace Food.APIs
             {
                 Options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
-
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             #endregion
             var app = builder.Build();
 
