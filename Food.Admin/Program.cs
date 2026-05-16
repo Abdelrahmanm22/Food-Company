@@ -1,3 +1,6 @@
+using Food.Repository.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace Food.Admin
 {
     public class Program
@@ -8,6 +11,10 @@ namespace Food.Admin
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<FoodContext>(Options =>
+            {
+                Options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
 
             var app = builder.Build();
 

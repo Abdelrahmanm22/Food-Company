@@ -1,4 +1,7 @@
 
+using Food.Repository.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace Food.APIs
 {
     public class Program
@@ -14,6 +17,10 @@ namespace Food.APIs
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddDbContext<FoodContext>(Options =>
+            {
+                Options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
 
             #endregion
             var app = builder.Build();
