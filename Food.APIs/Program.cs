@@ -1,4 +1,5 @@
 
+using System.Threading.Tasks;
 using Food.Repository.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,7 +7,7 @@ namespace Food.APIs
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,14 @@ namespace Food.APIs
 
             #endregion
             var app = builder.Build();
+
+
+            #region Update-Database-on-Startup
+            using var Scope = app.Services.CreateScope();
+            var Services = Scope.ServiceProvider;
+            var DbContext = Services.GetRequiredService<FoodContext>();
+            await DbContext.Database.MigrateAsync();
+            #endregion
 
             #region Configure the Http request pipeline.
 
