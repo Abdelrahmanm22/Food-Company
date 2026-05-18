@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Food.APIs.Errors;
 using Food.APIs.Helpers;
+using Food.APIs.Middlewares;
 using Food.Domain.Repositories;
 using Food.Repository;
 using Food.Repository.Data;
@@ -89,13 +90,15 @@ namespace Food.APIs
 
             #region Configure the Http request pipeline.
 
+            app.UseMiddleware<ExceptionMiddleware>();
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseStatusCodePagesWithReExecute("/errors/{0}"); //redirect to EndPointNotFound Controller when user access endpoint not found..
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
