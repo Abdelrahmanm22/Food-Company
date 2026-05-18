@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Food.APIs.DTOs;
+using Food.APIs.Errors;
 using Food.Domain.Models;
 using Food.Domain.Repositories;
 using Food.Domain.Specifications;
@@ -46,7 +47,7 @@ namespace Food.APIs.Controllers
                 if (restaurant == null)
                 {
                     logger.LogWarning($"Restaurant with ID {id} not found.");
-                    return NotFound();
+                    return NotFound(new ApiErrorResponse(404, $"Restaurant with ID {id} not found."));
                 }
                 var restaurantDto = mapper.Map<Restaurant, RestaurantToReturnDto>(restaurant);
                 return Ok(restaurantDto);
