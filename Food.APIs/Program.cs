@@ -1,9 +1,11 @@
 
 using System.Threading.Tasks;
+using Food.APIs.Errors;
 using Food.APIs.Helpers;
 using Food.Domain.Repositories;
 using Food.Repository;
 using Food.Repository.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -43,6 +45,26 @@ namespace Food.APIs
             });
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddAutoMapper(typeof(MappingProfiles));
+
+            #region validation error
+            builder.Services.Configure<ApiBehaviorOptions>(Options =>
+            {
+                Options.InvalidModelStateResponseFactory = (actionContext) =>
+                {
+                    var errors = actionContext.ModelState
+                                                .Where(p => p.Value.Errors.Count() > 0)
+                                                .SelectMany(p => p.Value.Errors)
+                                                .Select(e => e.ErrorMessage)
+                                                .ToList();
+
+                    var ValidationErrorResponse = new ApiValidationErrorResponse()
+                    {
+                        Errors = errors
+                    };
+                    return new BadRequestObjectResult(ValidationErrorResponse);
+                };
+            });
+            #endregion
             #endregion
             var app = builder.Build();
 
