@@ -1,5 +1,6 @@
 ﻿using Food.Domain.Models;
 using Food.Domain.Repositories;
+using Food.Domain.Specifications;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +21,8 @@ namespace Food.APIs.Controllers
         {
             try
             {
-                var restaurants = await restaurantRepo.GetAllAsync();
+                var Spec = new RestaurantWithCategoriesSpec();
+                var restaurants = await restaurantRepo.GetAllAsync(Spec);
                 return Ok(restaurants);
             }
             catch(Exception ex)
@@ -29,25 +31,26 @@ namespace Food.APIs.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while fetching restaurants.");
             }
         }
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetRestaurantById(int id)
-        {
-            try
-            {
-                var restaurant = await restaurantRepo.GetByIdAsync(id);
-                if (restaurant == null)
-                {
-                    logger.LogWarning($"Restaurant with ID {id} not found.");
-                    return NotFound();
-                }
-                return Ok(restaurant);
-            }
-            catch(Exception ex)
-            {
-                logger.LogError(ex, $"An error occurred while fetching restaurant with ID {id}.");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while fetching restaurant with ID {id}.");
-            }
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> GetRestaurantById(int id)
+        //{
+        //    try
+        //    {
+        //        var Spec = new BaseSpecifications<Restaurant>(id);
+        //        var restaurant = await restaurantRepo.GetByIdAsync(Spec);
+        //        if (restaurant == null)
+        //        {
+        //            logger.LogWarning($"Restaurant with ID {id} not found.");
+        //            return NotFound();
+        //        }
+        //        return Ok(restaurant);
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        logger.LogError(ex, $"An error occurred while fetching restaurant with ID {id}.");
+        //        return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while fetching restaurant with ID {id}.");
+        //    }
             
-        }
+        //}
     }
 }
