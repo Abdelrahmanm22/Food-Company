@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Food.Domain.Models;
 using Food.Domain.Repositories;
+using Food.Domain.Specifications;
 using Food.Repository.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,14 +19,14 @@ namespace Food.Repository
         {
             this.dbContext = dbContext;
         }
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<IEnumerable<T>> GetAllAsync(ISpecifications<T> Spec)
         {
-            return await dbContext.Set<T>().ToListAsync();
+            return await SpecificationEvalutor<T>.GetQuery(dbContext.Set<T>(), Spec).ToListAsync();
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        public async Task<T> GetByIdAsync(ISpecifications<T> Spec)
         {
-            return await dbContext.Set<T>().FirstAsync(r => r.Id == id);
+            return await SpecificationEvalutor<T>.GetQuery(dbContext.Set<T>(), Spec).FirstOrDefaultAsync();
         }
     }
 }
