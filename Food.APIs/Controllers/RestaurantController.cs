@@ -1,4 +1,6 @@
-﻿using Food.Domain.Models;
+﻿using AutoMapper;
+using Food.APIs.DTOs;
+using Food.Domain.Models;
 using Food.Domain.Repositories;
 using Food.Domain.Specifications;
 using Microsoft.AspNetCore.Http;
@@ -10,11 +12,13 @@ namespace Food.APIs.Controllers
     {
         private readonly IGenericRepository<Restaurant> restaurantRepo;
         private readonly ILogger<RestaurantController> logger;
+        private readonly IMapper mapper;
 
-        public RestaurantController(IGenericRepository<Restaurant> restaurantRepo,ILogger<RestaurantController> logger)
+        public RestaurantController(IGenericRepository<Restaurant> restaurantRepo,ILogger<RestaurantController> logger,IMapper mapper)
         {
             this.restaurantRepo = restaurantRepo;
             this.logger = logger;
+            this.mapper = mapper;
         }
         [HttpGet]
         public async Task<IActionResult> GetRestaurants()
@@ -23,10 +27,11 @@ namespace Food.APIs.Controllers
             {
                 var Spec = new RestaurantWithCategoriesSpec();
                 var restaurants = await restaurantRepo.GetAllAsync(Spec);
-                return Ok(restaurants);
+                var restaurantDtos = mapper.Map<IEnumerable<Restaurant>, IEnumerable<RestaurantToReturnDto>>(restaurants);
+                return Ok(restaurantDtos);
             }
             catch(Exception ex)
-            {
+            { 
                 logger.LogError(ex, "An error occurred while fetching restaurants.");
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while fetching restaurants.");
             }
@@ -43,7 +48,8 @@ namespace Food.APIs.Controllers
                     logger.LogWarning($"Restaurant with ID {id} not found.");
                     return NotFound();
                 }
-                return Ok(restaurant);
+                var restaurantDto = mapper.Map<Restaurant, RestaurantToReturnDto>(restaurant);
+                return Ok(restaurantDto);
             }
             catch (Exception ex)
             {

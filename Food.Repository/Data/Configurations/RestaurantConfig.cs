@@ -25,7 +25,7 @@ namespace Food.Repository.Data.Configurations
             builder.HasMany(r => r.Categories)
                 .WithOne(c => c.Restaurant)
                 .HasForeignKey(c => c.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

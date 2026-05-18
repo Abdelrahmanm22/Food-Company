@@ -1,5 +1,6 @@
 
 using System.Threading.Tasks;
+using Food.APIs.Helpers;
 using Food.Domain.Repositories;
 using Food.Repository;
 using Food.Repository.Data;
@@ -27,6 +28,8 @@ namespace Food.APIs
                 .CreateLogger();
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Host.UseSerilog(); //Use Serilog as the main logging system for the entire ASP.NET Core application.
+
             #region Configure Services
             // Add services to the container.
 
@@ -39,6 +42,7 @@ namespace Food.APIs
                 Options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            builder.Services.AddAutoMapper(typeof(MappingProfiles));
             #endregion
             var app = builder.Build();
 
