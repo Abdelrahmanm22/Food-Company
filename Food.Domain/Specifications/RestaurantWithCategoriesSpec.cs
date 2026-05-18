@@ -13,5 +13,10 @@ namespace Food.Domain.Specifications
         {
             Includes.Add(R => R.Categories); // Include the Categories navigation property when retrieving Restaurant entities.
         }
+        
+        public RestaurantWithCategoriesSpec(int id): base(R => R.Id == id)
+        {
+            Includes.Add(R => R.Categories);
+        }
     }
 }

@@ -31,26 +31,26 @@ namespace Food.APIs.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while fetching restaurants.");
             }
         }
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetRestaurantById(int id)
-        //{
-        //    try
-        //    {
-        //        var Spec = new BaseSpecifications<Restaurant>(id);
-        //        var restaurant = await restaurantRepo.GetByIdAsync(Spec);
-        //        if (restaurant == null)
-        //        {
-        //            logger.LogWarning($"Restaurant with ID {id} not found.");
-        //            return NotFound();
-        //        }
-        //        return Ok(restaurant);
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        logger.LogError(ex, $"An error occurred while fetching restaurant with ID {id}.");
-        //        return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while fetching restaurant with ID {id}.");
-        //    }
-            
-        //}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetRestaurantById(int id)
+        {
+            try
+            {
+                var Spec = new RestaurantWithCategoriesSpec(id);
+                var restaurant = await restaurantRepo.GetByIdAsync(Spec);
+                if (restaurant == null)
+                {
+                    logger.LogWarning($"Restaurant with ID {id} not found.");
+                    return NotFound();
+                }
+                return Ok(restaurant);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"An error occurred while fetching restaurant with ID {id}.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while fetching restaurant with ID {id}.");
+            }
+
+        }
     }
 }
