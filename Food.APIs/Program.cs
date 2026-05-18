@@ -90,11 +90,11 @@ namespace Food.APIs
 
             #region Configure the Http request pipeline.
 
-            app.UseMiddleware<ExceptionMiddleware>();
+            
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                
+                app.UseMiddleware<ExceptionMiddleware>();
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }

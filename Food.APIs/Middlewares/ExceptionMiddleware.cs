@@ -6,12 +6,12 @@ namespace Food.APIs.Middlewares
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate next;
-        private readonly ILogger<ExceptionMiddleware> looger;
+        private readonly ILogger<ExceptionMiddleware> logger;
         private readonly IHostEnvironment env;
-        public ExceptionMiddleware(RequestDelegate Next, ILogger<ExceptionMiddleware> looger, IHostEnvironment env)
+        public ExceptionMiddleware(RequestDelegate Next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
         {
             next = Next;
-            this.looger = looger;
+            this.logger = logger;
             this.env = env;
         }
         // InvokeAsync
@@ -23,7 +23,7 @@ namespace Food.APIs.Middlewares
             }
             catch (Exception ex)
             {
-                looger.LogError(ex, ex.Message);
+                logger.LogError(ex, ex.Message);
 
                 //Production ==>> Log ex in Database
 

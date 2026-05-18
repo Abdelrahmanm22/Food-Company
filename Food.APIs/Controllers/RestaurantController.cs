@@ -15,48 +15,38 @@ namespace Food.APIs.Controllers
         private readonly ILogger<RestaurantController> logger;
         private readonly IMapper mapper;
 
-        public RestaurantController(IGenericRepository<Restaurant> restaurantRepo,ILogger<RestaurantController> logger,IMapper mapper)
+        public RestaurantController(IGenericRepository<Restaurant> restaurantRepo, ILogger<RestaurantController> logger, IMapper mapper)
         {
             this.restaurantRepo = restaurantRepo;
             this.logger = logger;
             this.mapper = mapper;
         }
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<RestaurantToReturnDto>), StatusCodes.Status200OK)]
+
         public async Task<IActionResult> GetRestaurants()
         {
-            try
-            {
-                var Spec = new RestaurantWithCategoriesSpec();
-                var restaurants = await restaurantRepo.GetAllAsync(Spec);
-                var restaurantDtos = mapper.Map<IEnumerable<Restaurant>, IEnumerable<RestaurantToReturnDto>>(restaurants);
-                return Ok(restaurantDtos);
-            }
-            catch(Exception ex)
-            { 
-                logger.LogError(ex, "An error occurred while fetching restaurants.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while fetching restaurants.");
-            }
+            var Spec = new RestaurantWithCategoriesSpec();
+            var restaurants = await restaurantRepo.GetAllAsync(Spec);
+            var restaurantDtos = mapper.Map<IEnumerable<Restaurant>, IEnumerable<RestaurantToReturnDto>>(restaurants);
+            return Ok(restaurantDtos);
+
         }
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(RestaurantToReturnDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetRestaurantById(int id)
         {
-            try
+            var Spec = new RestaurantWithCategoriesSpec(id);
+            var restaurant = await restaurantRepo.GetByIdAsync(Spec);
+            if (restaurant == null)
             {
-                var Spec = new RestaurantWithCategoriesSpec(id);
-                var restaurant = await restaurantRepo.GetByIdAsync(Spec);
-                if (restaurant == null)
-                {
-                    logger.LogWarning($"Restaurant with ID {id} not found.");
-                    return NotFound(new ApiErrorResponse(404, $"Restaurant with ID {id} not found."));
-                }
-                var restaurantDto = mapper.Map<Restaurant, RestaurantToReturnDto>(restaurant);
-                return Ok(restaurantDto);
+                logger.LogWarning($"Restaurant with ID {id} not found.");
+                return NotFound(new ApiErrorResponse(404, $"Restaurant with ID {id} not found."));
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"An error occurred while fetching restaurant with ID {id}.");
-                return StatusCode(StatusCodes.Status500InternalServerError, $"An error occurred while fetching restaurant with ID {id}.");
-            }
+            var restaurantDto = mapper.Map<Restaurant, RestaurantToReturnDto>(restaurant);
+            return Ok(restaurantDto);
+
 
         }
     }
