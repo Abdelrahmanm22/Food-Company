@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net;
+using System.Text.Json;
 using Food.APIs.Errors;
 
 namespace Food.APIs.Middlewares
@@ -28,7 +29,7 @@ namespace Food.APIs.Middlewares
                 //Production ==>> Log ex in Database
 
                 context.Response.ContentType = "application/json";
-                context.Response.StatusCode = 500;
+                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError; //enum System.Net.HttpStatusCode.InternalServerError ==>> 500
 
 
                 var Response = env.IsDevelopment() ? new ApiServerErrorResponse(ex.Message, ex.StackTrace.ToString()) : new ApiServerErrorResponse();

@@ -3,7 +3,7 @@ using Food.APIs.DTOs;
 using Food.APIs.Errors;
 using Food.Domain.Models;
 using Food.Domain.Repositories;
-using Food.Domain.Specifications;
+using Food.Domain.Specifications.RestaurantSpec;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,10 +23,9 @@ namespace Food.APIs.Controllers
         }
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<RestaurantToReturnDto>), StatusCodes.Status200OK)]
-
-        public async Task<IActionResult> GetRestaurants()
+        public async Task<IActionResult> GetRestaurants(string? Sort)
         {
-            var Spec = new RestaurantWithCategoriesSpec();
+            var Spec = new RestaurantWithCategoriesSpec(Sort);
             var restaurants = await restaurantRepo.GetAllAsync(Spec);
             var restaurantDtos = mapper.Map<IEnumerable<Restaurant>, IEnumerable<RestaurantToReturnDto>>(restaurants);
             return Ok(restaurantDtos);
@@ -46,8 +45,6 @@ namespace Food.APIs.Controllers
             }
             var restaurantDto = mapper.Map<Restaurant, RestaurantToReturnDto>(restaurant);
             return Ok(restaurantDto);
-
-
         }
     }
 }

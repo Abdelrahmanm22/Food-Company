@@ -19,6 +19,14 @@ namespace Food.Domain.Specifications
             {
                 query = query.Where(spec.Criteria); // _dbContext.Set<T>().Where(P => P.Id == id)
             }
+            if(spec.OrderBy is not null)
+            {
+                query = query.OrderBy(spec.OrderBy); // _dbContext.Set<T>().Where(P => P.Id == id).OrderBy(P => P.Name)
+            }
+            if (spec.OrderByDesc is not null)
+            {
+                query = query.OrderByDescending(spec.OrderByDesc); // _dbContext.Set<T>().Where(P => P.Id == id).OrderByDescending(P => P.Name)
+            }
             query = spec.Includes.Aggregate(query, (CurrentQuery, IncludeExpression) => CurrentQuery.Include(IncludeExpression)); ///_dbContext.Products.Where(P => P.Id == id).Include(P => P.ProductType).Include(P => P.ProductBrand);
             return query;
         }
