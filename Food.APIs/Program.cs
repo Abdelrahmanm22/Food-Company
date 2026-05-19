@@ -3,9 +3,11 @@ using System.Threading.Tasks;
 using Food.APIs.Errors;
 using Food.APIs.Helpers;
 using Food.APIs.Middlewares;
+using Food.Domain.Models.Identity;
 using Food.Domain.Repositories;
 using Food.Repository;
 using Food.Repository.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -71,6 +73,9 @@ namespace Food.APIs
                 };
             });
             #endregion
+            builder.Services.AddIdentity<AppUser, IdentityRole>()
+            .AddEntityFrameworkStores<FoodContext>();
+            builder.Services.AddAuthentication(); 
             #endregion
             var app = builder.Build();
 
@@ -84,6 +89,9 @@ namespace Food.APIs
                 await DbContext.Database.MigrateAsync(); //Udpate-Database on Startup
 
                 #region Data Seeding
+                var roleManager = Services.GetRequiredService<RoleManager<IdentityRole>>();
+                var userManager = Services.GetRequiredService<UserManager<AppUser>>();
+                await AppIdentityDbContextSeed.SeedUserAsync(userManager, roleManager);
                 await FoodContextSeed.SeedAsync(DbContext);
                 #endregion
             }
