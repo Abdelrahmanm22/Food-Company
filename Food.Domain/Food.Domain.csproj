@@ -10,4 +10,8 @@
     <Folder Include="Specifications\NewFolder\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.16" />
+  </ItemGroup>
+
 </Project>

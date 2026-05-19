@@ -5,11 +5,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Food.Domain.Models;
+using Food.Domain.Models.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Food.Repository.Data
 {
-    public class FoodContext : DbContext
+    public class FoodContext : IdentityDbContext<AppUser>
     {
         public FoodContext(DbContextOptions<FoodContext> options):base(options)
         {
@@ -23,5 +25,6 @@ namespace Food.Repository.Data
         public DbSet<Restaurant> Restaurants { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Item> Items { get; set; }
+        public DbSet<Department> Departments { get; set; }
     }
 }
