@@ -36,7 +36,12 @@ namespace Food.APIs
             #region Configure Services
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions
+                    .Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()); //to convert enum to string in json response instead of int value..
+                });
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

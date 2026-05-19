@@ -14,6 +14,9 @@ namespace Food.Domain.Specifications
         public List<Expression<Func<T, object>>> Includes { get; set; } = new List<Expression<Func<T, object>>>(); // instead of repeating this line in both constructors, we can initialize it here directly. This way, it will be initialized regardless of which constructor is used.
         public Expression<Func<T, object>> OrderBy { get; set; }
         public Expression<Func<T, object>> OrderByDesc { get; set; }
+        public int Take { get; set; }
+        public int Skip { get; set; }
+        public bool IsPaginationEnabled { get; set; }
 
         //Get All
         public BaseSpecifications()
@@ -33,6 +36,12 @@ namespace Food.Domain.Specifications
         public void SetOrderByDesc(Expression<Func<T, object>> orderByDescExpression)
         {
             OrderByDesc = orderByDescExpression;
+        }
+        public void ApplyPagination(int skip, int take)
+        {
+            Skip = skip;
+            Take = take;
+            IsPaginationEnabled = true;
         }
     }
 }

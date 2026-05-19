@@ -23,9 +23,9 @@ namespace Food.APIs.Controllers
         }
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<RestaurantToReturnDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetRestaurants(string? Sort)
+        public async Task<IActionResult> GetRestaurants([FromQuery]ProductSpecParams Params)
         {
-            var Spec = new RestaurantWithCategoriesSpec(Sort);
+            var Spec = new RestaurantWithCategoriesSpec(Params);
             var restaurants = await restaurantRepo.GetAllAsync(Spec);
             var restaurantDtos = mapper.Map<IEnumerable<Restaurant>, IEnumerable<RestaurantToReturnDto>>(restaurants);
             return Ok(restaurantDtos);

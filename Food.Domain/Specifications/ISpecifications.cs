@@ -21,5 +21,13 @@ namespace Food.Domain.Specifications
         // Signature of property for ==> [OrderByDesc(P=>P.Name)]
         public Expression<Func<T, object>> OrderByDesc { get; set; }
 
+        // Signature of property for Take
+        public int Take { get; set; }
+        // Signature of property for Skip
+        public int Skip { get; set; }
+        // Signature of property for IsPagingEnabled
+        public bool IsPaginationEnabled { get; set; }
+
+
     }
 }
