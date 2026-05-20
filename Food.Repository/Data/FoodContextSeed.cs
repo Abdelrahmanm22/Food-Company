@@ -27,6 +27,20 @@ namespace Food.Repository.Data
                     await dbContext.SaveChangesAsync();
                 }
             }
+            //Seed Departments
+            if (!dbContext.Departments.Any())
+            {
+                var DepartmentsData = File.ReadAllText("../Food.Repository/Data/DataSeed/Departments.json");
+                var Departments = JsonSerializer.Deserialize<List<Department>>(DepartmentsData);
+                if (Departments?.Count > 0)
+                {
+                    foreach(var department in Departments)
+                    {
+                        await dbContext.Set<Department>().AddAsync(department);
+                    }
+                    await dbContext.SaveChangesAsync();
+                }
+            }
         }
     }
 }
