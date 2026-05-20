@@ -11,7 +11,8 @@ namespace Food.APIs.Helpers
             CreateMap<Restaurant, RestaurantToReturnDto>();
             CreateMap<Item, ItemToReturnDto>()
                 .ForMember(d => d.Category, O => O.MapFrom(s => s.Category.Name))
-                .ForMember(d => d.ImageUrl, O => O.MapFrom<ItemPictureUrlResolver>()); 
+                .ForMember(d => d.ImageUrl, O => O.MapFrom<ItemPictureUrlResolver>());
+            CreateMap<Department, DepartmentToReturnDto>();
         }
     }
 }

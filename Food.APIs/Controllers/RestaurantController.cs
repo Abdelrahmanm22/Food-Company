@@ -22,7 +22,7 @@ namespace Food.APIs.Controllers
             this.logger = logger;
             this.mapper = mapper;
         }
-        [Authorize]
+        //[Authorize]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<RestaurantToReturnDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetRestaurants([FromQuery]ProductSpecParams Params)

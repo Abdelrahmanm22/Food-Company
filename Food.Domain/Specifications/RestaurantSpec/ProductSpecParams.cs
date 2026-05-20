@@ -10,7 +10,7 @@ namespace Food.Domain.Specifications.RestaurantSpec
     public class ProductSpecParams
     {
         public RestaurantSort? Sort { get; set; }
-        private int pageSize;
+        private int pageSize= 10;
 
         public int PageSize
         {
