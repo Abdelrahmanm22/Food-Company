@@ -4,6 +4,7 @@ using Food.APIs.Errors;
 using Food.Domain.Models;
 using Food.Domain.Repositories;
 using Food.Domain.Specifications.RestaurantSpec;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +22,7 @@ namespace Food.APIs.Controllers
             this.logger = logger;
             this.mapper = mapper;
         }
+        [Authorize]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<RestaurantToReturnDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetRestaurants([FromQuery]ProductSpecParams Params)
@@ -31,6 +33,7 @@ namespace Food.APIs.Controllers
             return Ok(restaurantDtos);
 
         }
+        [Authorize]
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(RestaurantToReturnDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]

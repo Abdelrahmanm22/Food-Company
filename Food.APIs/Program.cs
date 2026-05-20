@@ -1,15 +1,20 @@
 
+using System.Text;
 using System.Threading.Tasks;
 using Food.APIs.Errors;
 using Food.APIs.Helpers;
 using Food.APIs.Middlewares;
 using Food.Domain.Models.Identity;
 using Food.Domain.Repositories;
+using Food.Domain.Services;
 using Food.Repository;
 using Food.Repository.Data;
+using Food.Service;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
 namespace Food.APIs
@@ -73,9 +78,27 @@ namespace Food.APIs
                 };
             });
             #endregion
-            builder.Services.AddIdentity<AppUser, IdentityRole>()
-            .AddEntityFrameworkStores<FoodContext>();
-            builder.Services.AddAuthentication(); 
+            builder.Services.AddIdentity<AppUser, IdentityRole>() 
+                .AddEntityFrameworkStores<FoodContext>();
+            builder.Services.AddAuthentication(Options =>
+            {
+                Options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                Options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(Options =>
+                {
+                    Options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+                        ValidateAudience = true,
+                        ValidAudience = builder.Configuration["JWT:ValidAudience"],
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]))
+                    };
+                }); //UserManager / SigninManager / RoleManager
+            builder.Services.AddScoped<ITokenService, TokenService>();
             #endregion
             var app = builder.Build();
 
@@ -113,7 +136,7 @@ namespace Food.APIs
             }
             app.UseStatusCodePagesWithReExecute("/errors/{0}"); //redirect to EndPointNotFound Controller when user access endpoint not found..
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
             app.UseStaticFiles();
 

@@ -1,6 +1,7 @@
 ﻿using Food.APIs.DTOs;
 using Food.APIs.Errors;
 using Food.Domain.Models.Identity;
+using Food.Domain.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +12,13 @@ namespace Food.APIs.Controllers
     {
         private readonly UserManager<AppUser> userManager;
         private readonly SignInManager<AppUser> signInManager;
+        private readonly ITokenService tokenService;
 
-        public AccountsController(UserManager<AppUser> userManager,SignInManager<AppUser> signInManager)
+        public AccountsController(UserManager<AppUser> userManager,SignInManager<AppUser> signInManager,ITokenService tokenService)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.tokenService = tokenService;
         }
         [HttpPost("Register")]
         public async Task<ActionResult<UserDto>> Register(RegisterDto model)
@@ -34,7 +37,7 @@ namespace Food.APIs.Controllers
             {
                 UserName = User.UserName,
                 Email = User.Email,
-                Token = $"This is a token for {User.UserName}"
+                Token = await tokenService.CreateTokenAsync(User, userManager)
             };
             return ReturnedUser;
         } 
@@ -49,7 +52,7 @@ namespace Food.APIs.Controllers
             {
                 UserName = User.UserName,
                 Email = User.Email,
-                Token = $"This is a token for {User.UserName}"
+                Token = await tokenService.CreateTokenAsync(User, userManager)
             };
             return ReturnedUser;
         }
