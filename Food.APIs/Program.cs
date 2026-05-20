@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Food.APIs.Errors;
 using Food.APIs.Helpers;
 using Food.APIs.Middlewares;
+using Food.Domain;
 using Food.Domain.Models.Identity;
 using Food.Domain.Repositories;
 using Food.Domain.Services;
@@ -77,6 +78,7 @@ namespace Food.APIs
                     return new BadRequestObjectResult(ValidationErrorResponse);
                 };
             });
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             #endregion
             builder.Services.AddIdentity<AppUser, IdentityRole>() 
                 .AddEntityFrameworkStores<FoodContext>();

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Food.APIs.DTOs;
+using Food.Domain;
 using Food.Domain.Models;
 using Food.Domain.Repositories;
 using Food.Domain.Specifications.DepartmentSpec;
@@ -10,13 +11,13 @@ namespace Food.APIs.Controllers
 {
     public class DepartmentController : APIBaseController
     {
-        private readonly IGenericRepository<Department> departmentRepo;
+        private readonly IUnitOfWork unitOfWork;
         private readonly ILogger<DepartmentController> logger;
         private readonly IMapper mapper;
 
-        public DepartmentController(IGenericRepository<Department> departmentRepo,ILogger<DepartmentController> logger,IMapper mapper)
+        public DepartmentController(IUnitOfWork unitOfWork,ILogger<DepartmentController> logger,IMapper mapper)
         {
-            this.departmentRepo = departmentRepo;
+            this.unitOfWork = unitOfWork;
             this.logger = logger;
             this.mapper = mapper;
         }
@@ -25,7 +26,7 @@ namespace Food.APIs.Controllers
         public async Task<IActionResult> GetDepartments()
         {
             var Spec = new DepartmentSpec();
-            var Departments = await departmentRepo.GetAllAsync(Spec);
+            var Departments = await unitOfWork.Repository<Department>().GetAllAsync(Spec);
             var DepartmentDtos = mapper.Map<IEnumerable<Department>, IEnumerable<DepartmentToReturnDto>>(Departments);
             return Ok(DepartmentDtos);
         }
