@@ -2,9 +2,7 @@
 using Food.APIs.DTOs;
 using Food.Domain;
 using Food.Domain.Models;
-using Food.Domain.Repositories;
 using Food.Domain.Specifications.DepartmentSpec;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Food.APIs.Controllers
@@ -15,7 +13,7 @@ namespace Food.APIs.Controllers
         private readonly ILogger<DepartmentController> logger;
         private readonly IMapper mapper;
 
-        public DepartmentController(IUnitOfWork unitOfWork,ILogger<DepartmentController> logger,IMapper mapper)
+        public DepartmentController(IUnitOfWork unitOfWork, ILogger<DepartmentController> logger,IMapper mapper)
         {
             this.unitOfWork = unitOfWork;
             this.logger = logger;
