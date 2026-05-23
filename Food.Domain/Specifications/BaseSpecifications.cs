@@ -12,6 +12,7 @@ namespace Food.Domain.Specifications
     {
         public Expression<Func<T, bool>> Criteria { get; set; }
         public List<Expression<Func<T, object>>> Includes { get; set; } = new List<Expression<Func<T, object>>>(); // instead of repeating this line in both constructors, we can initialize it here directly. This way, it will be initialized regardless of which constructor is used.
+        public List<string> IncludeStrings { get; set; } = new List<string>();
         public Expression<Func<T, object>> OrderBy { get; set; }
         public Expression<Func<T, object>> OrderByDesc { get; set; }
         public int Take { get; set; }
@@ -28,6 +29,10 @@ namespace Food.Domain.Specifications
         {
             Criteria = cr;
             //Includes = new List<Expression<Func<T, object>>>();
+        }
+        public void AddInclude(string includeString)
+        {
+            IncludeStrings.Add(includeString);
         }
         public void SetOrderBy(Expression<Func<T, object>> orderByExpression)
         {

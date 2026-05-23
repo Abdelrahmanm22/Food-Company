@@ -41,6 +41,14 @@ namespace Food.Repository.Data
                 };
                 await userManager.CreateAsync(Employee, "Ar115599@");
                 await userManager.AddToRoleAsync(Employee, UserRoles.Employee);
+                var Employee2 = new AppUser
+                {
+                    UserName = "Khaled",
+                    Email = "Khaledmramadan136@gmail.com",
+                    PhoneNumber = "01015496488"
+                };
+                await userManager.CreateAsync(Employee2, "Ar115599@");
+                await userManager.AddToRoleAsync(Employee2, UserRoles.Employee);
             }
         }
     }

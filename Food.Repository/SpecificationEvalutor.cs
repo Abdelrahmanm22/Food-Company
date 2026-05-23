@@ -32,6 +32,7 @@ namespace Food.Domain.Specifications
                 query = query.Skip(spec.Skip).Take(spec.Take); // _dbContext.Set<T>().Where(P => P.Id == id).OrderByDescending(P => P.Name).Skip(40).Take(10)
             }
             query = spec.Includes.Aggregate(query, (CurrentQuery, IncludeExpression) => CurrentQuery.Include(IncludeExpression)); ///_dbContext.Products.Where(P => P.Id == id).Include(P => P.ProductType).Include(P => P.ProductBrand);
+            query = spec.IncludeStrings.Aggregate(query, (CurrentQuery, IncludeString) => CurrentQuery.Include(IncludeString)); ///// String-based includes (handles ThenInclude chains)
             return query;
         }
     }

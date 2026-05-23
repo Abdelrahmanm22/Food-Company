@@ -16,6 +16,8 @@ namespace Food.Domain.Specifications
         public Expression<Func<T,bool>> Criteria { get; set; }
         // Signature of property for ==> List of Include [Include(P => P.ProductType).Include(P => P.ProductBrand)]
         public List<Expression<Func<T,object>>> Includes { get; set; }
+        // string includes  
+        public List<string> IncludeStrings { get; set; }
         // Signature of property for ==> [OrderBy(P=>P.Name)]
         public Expression<Func<T,object>> OrderBy { get; set; }
         // Signature of property for ==> [OrderByDesc(P=>P.Name)]

@@ -85,6 +85,8 @@ namespace Food.APIs
                 };
             });
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<ISessionService, SessionService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
             #endregion
             builder.Services.AddIdentity<AppUser, IdentityRole>() 
                 .AddEntityFrameworkStores<FoodContext>();

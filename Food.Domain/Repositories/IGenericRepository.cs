@@ -12,5 +12,8 @@ namespace Food.Domain.Repositories
     {
         Task<IEnumerable<T>> GetAllAsync(ISpecifications<T> Spec);
         Task<T> GetByIdAsync(ISpecifications<T> Spec);
+        Task AddAsync(T entity);
+        void Update(T entity);
+        void Delete(T entity);
     }
 }

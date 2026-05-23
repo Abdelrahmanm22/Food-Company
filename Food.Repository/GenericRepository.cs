@@ -28,5 +28,19 @@ namespace Food.Repository
         {
             return await SpecificationEvalutor<T>.GetQuery(dbContext.Set<T>(), Spec).FirstOrDefaultAsync();
         }
+        public async Task AddAsync(T entity)
+        {
+            await dbContext.Set<T>().AddAsync(entity);
+        }
+
+        public void Update(T entity)
+        {
+            dbContext.Set<T>().Update(entity);
+        }
+
+        public void Delete(T entity)
+        {
+            dbContext.Set<T>().Remove(entity);
+        }
     }
 }

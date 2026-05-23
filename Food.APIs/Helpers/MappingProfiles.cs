@@ -13,6 +13,12 @@ namespace Food.APIs.Helpers
                 .ForMember(d => d.Category, O => O.MapFrom(s => s.Category.Name))
                 .ForMember(d => d.ImageUrl, O => O.MapFrom<ItemPictureUrlResolver>());
             CreateMap<Department, DepartmentToReturnDto>();
+            CreateMap<SessionJoin, SessionJoinToReturnDto>()
+                .ForMember(d => d.UserName, O => O.MapFrom(s => s.User.UserName));
+            CreateMap<Session, SessionToReturnDto>()
+                .ForMember(d => d.HostUserName, O => O.MapFrom(s => s.HostUser.UserName))
+                .ForMember(d => d.RestaurantName, O => O.MapFrom(s => s.Restaurant.Name))
+                .ForMember(d => d.Participants, O => O.MapFrom(s => s.SessionJoins));
         }
     }
 }
