@@ -26,6 +26,7 @@ namespace Food.Repository.Data.Configurations
                    .IsRequired()
                    .HasDefaultValue(true);
             builder.Property(i => i.ImageUrl)
+                   .IsRequired(false)
                    .HasMaxLength(500);
             builder.HasOne(i => i.Category)
                    .WithMany(c => c.Items)
