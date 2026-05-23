@@ -48,7 +48,7 @@ namespace Food.Service
             await _unitOfWork.Repository<SessionJoin>().AddAsync(hostJoin);
             await _unitOfWork.CompleteAsync();
 
-            _ = _emailService.NotifyEmployeesForNewSessionAsync(restaurant.Name, notes, hostUserId);
+            await _emailService.NotifyEmployeesForNewSessionAsync(restaurant.Name, notes, hostUserId);
 
             return session;
 

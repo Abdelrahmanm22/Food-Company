@@ -35,6 +35,28 @@ namespace Food.APIs.Controllers
             if(string.IsNullOrEmpty(email)) return null;
             return await _userManager.FindByEmailAsync(email);
         }
+        [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<SessionToReturnDto>),StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllSessions([FromQuery] SessionSpecParams specParams)
+        {
+            var spec = new SessionWithDetailsSpec(specParams);
+            var sessions = await _unitOfWork.Repository<Session>().GetAllAsync(spec);
+            var mapped = _mapper.Map<IEnumerable<Session>, IEnumerable<SessionToReturnDto>>(sessions);
+            return Ok(mapped);
+        }
+
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(SessionToReturnDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetSessionById(int id)
+        {
+            var spec = new SessionWithDetailsSpec(id);
+            var session = await _unitOfWork.Repository<Session>().GetByIdAsync(spec);
+            if (session == null) return NotFound(new ApiErrorResponse(404,"Session Not Found"));
+            var mapped = _mapper.Map<Session, SessionToReturnDto>(session);
+            return Ok(mapped);
+        }
+
         [HttpPost]
         [ProducesResponseType(typeof(SessionToReturnDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]

@@ -71,15 +71,15 @@ namespace Food.Service
                 _logger.LogError(ex, "Failed to send email to {To} with subject {Subject}", to, subject);
             }
 
-            //try
-            //{
-            //    await _unitOfWork.Repository<Email>().AddAsync(email);
-            //    await _unitOfWork.CompleteAsync();
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.LogError(ex, "Failed to save email log to the database");
-            //}
+            try
+            {
+                await _unitOfWork.Repository<Email>().AddAsync(email);
+                await _unitOfWork.CompleteAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save email log to the database");
+            }
         }
         public async Task NotifyEmployeesForNewSessionAsync(string restaurantName, string? notes, string? excludeUserId = null)
         {
