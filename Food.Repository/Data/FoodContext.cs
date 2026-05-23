@@ -26,5 +26,10 @@ namespace Food.Repository.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<Department> Departments { get; set; }
+        public DbSet<Session> Sessions { get; set; }
+        public DbSet<SessionJoin> SessionJoins { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<Email> Emails { get; set; }
     }
 }

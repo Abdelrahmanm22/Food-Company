@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Food.Domain.Models
 {
-    public class Email
+    public class Email : BaseModel
     {
         public int Id { get; set; }
         public string To { get; set; }
