@@ -81,36 +81,21 @@ namespace Food.Service
             //    _logger.LogError(ex, "Failed to save email log to the database");
             //}
         }
-        public async Task NotifyEmployeesForNewSessionAsync(
-            string restaurantName,
-            string? notes,
-            string? excludeUserId = null)
+        public async Task NotifyEmployeesForNewSessionAsync(string restaurantName, string? notes, string? excludeUserId = null)
         {
             var employees = await _userManager.GetUsersInRoleAsync(UserRoles.Employee);
-
-            var tasks = employees
-                .Where(e =>
-                    !string.IsNullOrEmpty(e.Email) &&
-                    (excludeUserId == null || e.Id != excludeUserId))
-                .Select(async employee =>
-                {
-                    var subject = "New Food Session Started!";
-
-                    var body =
-                        $"Hello {employee.UserName},\n\n" +
-                        $"A new food session has been started at {restaurantName}.\n" +
-                        $"Session Notes: {notes ?? "No notes provided"}\n\n" +
-                        $"Join the session and place your order before it closes!\n\n" +
-                        "Bon appétit!";
-
-                    await SendEmailAsync(
-                        employee.Email!,
-                        subject,
-                        body,
-                        employee.Id);
-                });
-
-            await Task.WhenAll(tasks);
+            foreach(var employee in employees)
+            {
+                if (string.IsNullOrEmpty(employee.Email)) continue;
+                if (excludeUserId != null && employee.Id == excludeUserId) continue;
+                var subject = "New Food Session Started!";
+                var body = $"Hello {employee.UserName},\n\n" +
+                           $"A new food session has been started at {restaurantName}.\n" +
+                           $"Session Notes: {notes ?? "No notes provided"}\n\n" +
+                           $"Join the session and place your order before it closes!\n\n" +
+                           "Bon appétit!";
+                await SendEmailAsync(employee.Email, subject, body, employee.Id);
+            }
         }
     }
 }
