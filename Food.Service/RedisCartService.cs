@@ -29,5 +29,31 @@ namespace Food.Service
             if(!created) return null;
             return await GetCartAsync(cart.Id);
         }
+        public async Task<bool> DeleteCartAsync(string cartKey)
+        {
+            return await _database.KeyDeleteAsync(cartKey);
+        }
+        public async Task<List<SessionCart>> GetAllCartsForSessionAsync(int sessionId, List<string> userIds)
+        {
+            var carts = new List<SessionCart>();
+            foreach (var userId in userIds)
+            {
+                var cartKey = $"cart:{sessionId}:{userId}";
+                var cart = await GetCartAsync(cartKey);
+                if (cart != null)
+                {
+                    carts.Add(cart);
+                }
+            }
+            return carts;
+        }
+        public async Task DeleteAllCartsForSessionAsync(int sessionId, List<string> userIds)
+        {
+            foreach (var userId in userIds)
+            {
+                var cartKey = $"cart:{sessionId}:{userId}";
+                await DeleteCartAsync(cartKey);
+            }
+        }
     }
 }

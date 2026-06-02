@@ -23,6 +23,13 @@ namespace Food.APIs.Helpers
             //Restaurant menue mapping
             CreateMap<Restaurant, RestaurantMenuToReturnDto>();
             CreateMap<Category, CategoryWithItemsDto>();
+
+            //Cart mapping
+            CreateMap<SessionCart, SessionCartToReturnDto>()
+                .ForMember(d => d.Total, o => o.MapFrom(s => s.Items.Sum(it => it.Price * it.Quantity)));
+            CreateMap<CartItem, CartItemToReturnDto>()
+                .ForMember(d => d.SubTotal, o => o.MapFrom(s => s.Price * s.Quantity));
+
         }
     }
 }

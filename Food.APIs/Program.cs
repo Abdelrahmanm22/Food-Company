@@ -84,10 +84,11 @@ namespace Food.APIs
                     return new BadRequestObjectResult(ValidationErrorResponse);
                 };
             });
+            #endregion
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ISessionService, SessionService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
-            #endregion
+            builder.Services.AddScoped<IRedisCartService,RedisCartService>();
             builder.Services.AddIdentity<AppUser, IdentityRole>() 
                 .AddEntityFrameworkStores<FoodContext>();
             builder.Services.AddAuthentication(Options =>
