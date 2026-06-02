@@ -27,6 +27,7 @@ namespace Food.Service
             // 1. Private Claims [User - Defined]
             var AuthClaims = new List<Claim>()
             {
+                new Claim(ClaimTypes.NameIdentifier,user.Id),
                 new Claim(ClaimTypes.GivenName,user.UserName),
                 new Claim(ClaimTypes.Email,user.Email),
             };
