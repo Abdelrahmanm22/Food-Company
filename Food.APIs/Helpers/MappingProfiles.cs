@@ -19,6 +19,10 @@ namespace Food.APIs.Helpers
                 .ForMember(d => d.HostUserName, O => O.MapFrom(s => s.HostUser.UserName))
                 .ForMember(d => d.RestaurantName, O => O.MapFrom(s => s.Restaurant.Name))
                 .ForMember(d => d.Participants, O => O.MapFrom(s => s.SessionJoins));
+
+            //Restaurant menue mapping
+            CreateMap<Restaurant, RestaurantMenuToReturnDto>();
+            CreateMap<Category, CategoryWithItemsDto>();
         }
     }
 }

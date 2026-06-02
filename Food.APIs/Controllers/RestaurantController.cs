@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Food.APIs.Controllers
 {
+    [Authorize]
     public class RestaurantController : APIBaseController
     {
         private readonly IUnitOfWork unitOfWork;
@@ -23,7 +24,6 @@ namespace Food.APIs.Controllers
             this.logger = logger;
             this.mapper = mapper;
         }
-        [Authorize]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<RestaurantToReturnDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetRestaurants([FromQuery]ProductSpecParams Params)
@@ -34,7 +34,6 @@ namespace Food.APIs.Controllers
             return Ok(restaurantDtos);
 
         }
-        [Authorize]
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(RestaurantToReturnDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
@@ -49,6 +48,22 @@ namespace Food.APIs.Controllers
             }
             var restaurantDto = mapper.Map<Restaurant, RestaurantToReturnDto>(restaurant);
             return Ok(restaurantDto);
+        }
+
+        [HttpGet("{id}/menu")]
+        [ProducesResponseType(typeof(RestaurantMenuToReturnDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetRestaurantMenu(int id)
+        {
+            var Spec = new RestaurantWithMenuSpec(id);
+            var Restaurant = await unitOfWork.Repository<Restaurant>().GetByIdAsync(Spec);
+            if(Restaurant == null)
+            {
+                logger.LogWarning($"Restaurant with ID {id} not found for menu request.");
+                return NotFound(new ApiErrorResponse(404, $"Restaurant with ID {id} not found."));
+            }
+            var restaurantMenuDto = mapper.Map<Restaurant, RestaurantMenuToReturnDto>(Restaurant);
+            return Ok(restaurantMenuDto);
         }
     }
 }
