@@ -9,6 +9,7 @@ using Food.Domain;
 using Food.Domain.Models;
 using Food.Domain.Models.Identity;
 using Food.Domain.Services;
+using Food.Domain.Specifications.SessionSpec;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -95,6 +96,24 @@ namespace Food.Service
                            $"Join the session and place your order before it closes!\n\n" +
                            "Bon appétit!";
                 await SendEmailAsync(employee.Email, subject, body, employee.Id);
+            }
+        }
+        public async Task NotifyParticipantsSessionCancelledAsync(int sessionId, string restaurantName)
+        {
+            var sessionSpec = new SessionWithDetailsSpec(sessionId);
+            var session = await _unitOfWork.Repository<Session>().GetByIdAsync(sessionSpec);
+            if (session == null) return;
+
+            foreach (var participant in session.SessionJoins)
+            {
+                if (participant.User == null || string.IsNullOrEmpty(participant.User.Email)) continue;
+
+                var subject = "Food Session Cancelled";
+                var body = $"Hello {participant.User.UserName},\n\n" +
+                           $"The Food session for '{restaurantName}' has been cancelled by the host ({session.HostUser.UserName}).\n" +
+                           $"Any items in your cart for this session have been cleared.\n\n" +
+                           $"Best regards.";
+                await SendEmailAsync(participant.User.Email, subject, body, participant.UserId);
             }
         }
     }
