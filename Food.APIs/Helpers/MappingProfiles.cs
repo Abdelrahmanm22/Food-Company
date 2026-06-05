@@ -30,6 +30,15 @@ namespace Food.APIs.Helpers
             CreateMap<CartItem, CartItemToReturnDto>()
                 .ForMember(d => d.SubTotal, o => o.MapFrom(s => s.Price * s.Quantity));
 
+            // Order mapping
+            CreateMap<Order, OrderToReturnDto>()
+                .ForMember(d => d.RestaurantName, o => o.MapFrom(s => s.Session.Restaurant.Name))
+                .ForMember(d => d.HostUserName, o => o.MapFrom(s => s.Session.HostUser.UserName))
+                .ForMember(d => d.DeliveryCostPerPerson, o => o.MapFrom(s => s.Session.SessionJoins.Count > 0 ? s.DeliveryCost / s.Session.SessionJoins.Count : 0));
+            CreateMap<OrderDetail,OrderDetailToReturnDto>()
+                .ForMember(d => d.ItemName, o => o.MapFrom(s => s.Item.Name))
+                .ForMember(d => d.UserName, o => o.MapFrom(s => s.User != null ? s.User.UserName : ""))
+                .ForMember(d => d.SubTotal, o => o.MapFrom(s => s.Price * s.Quantity));
         }
     }
 }
