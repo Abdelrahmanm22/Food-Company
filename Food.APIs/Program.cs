@@ -50,6 +50,8 @@ namespace Food.APIs
                 {
                     options.JsonSerializerOptions
                     .Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()); //to convert enum to string in json response instead of int value..
+                    // Prevent circular reference errors (e.g. Restaurant → Categories → Restaurant)
+                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
                 });
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddEndpointsApiExplorer();
@@ -110,6 +112,16 @@ namespace Food.APIs
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]))
                     };
                 }); //UserManager / SigninManager / RoleManager
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy
+                        .WithOrigins("http://localhost:8080")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
             builder.Services.AddScoped<ITokenService, TokenService>();
             #endregion
             var app = builder.Build();
@@ -148,6 +160,7 @@ namespace Food.APIs
             }
             app.UseStatusCodePagesWithReExecute("/errors/{0}"); //redirect to EndPointNotFound Controller when user access endpoint not found..
             app.UseHttpsRedirection();
+            app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseStaticFiles();

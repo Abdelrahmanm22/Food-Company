@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Food.APIs.DTOs;
 using Food.Domain.Models;
 
@@ -8,6 +8,7 @@ namespace Food.APIs.Helpers
     {
         public MappingProfiles()
         {
+            CreateMap<Category, CategoryToReturnDto>();
             CreateMap<Restaurant, RestaurantToReturnDto>();
             CreateMap<Item, ItemToReturnDto>()
                 .ForMember(d => d.Category, O => O.MapFrom(s => s.Category.Name))
