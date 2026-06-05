@@ -5,7 +5,6 @@ namespace Food.Domain.Enums.Session
         Open,
         Closed,
         Ordered,
-        Received,
         Cancelled
     }
 }

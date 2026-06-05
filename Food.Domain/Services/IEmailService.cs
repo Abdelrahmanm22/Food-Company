@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +11,8 @@ namespace Food.Domain.Services
         Task SendEmailAsync(string to, string subject, string body, string userId);
         Task NotifyEmployeesForNewSessionAsync(string restaurantName, string? notes, string? excludeUserId = null);
         Task NotifyParticipantsSessionCancelledAsync(int sessionId, string restaurantName);
+        Task NotifyOrderConfirmedAsync(int orderId);
+        Task NotifyOrderDeliveredAsync(int orderId);
     }
 
 }

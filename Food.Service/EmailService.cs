@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -10,6 +10,7 @@ using Food.Domain.Models;
 using Food.Domain.Models.Identity;
 using Food.Domain.Services;
 using Food.Domain.Specifications.SessionSpec;
+using Food.Domain.Specifications.OrderSpec;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -113,6 +114,71 @@ namespace Food.Service
                            $"The Food session for '{restaurantName}' has been cancelled by the host ({session.HostUser.UserName}).\n" +
                            $"Any items in your cart for this session have been cleared.\n\n" +
                            $"Best regards.";
+                await SendEmailAsync(participant.User.Email, subject, body, participant.UserId);
+            }
+        }
+        public async Task NotifyOrderConfirmedAsync(int orderId)
+        {
+            var orderSpec = new OrderWithDetailsSpec(orderId);
+            var order = await _unitOfWork.Repository<Order>().GetByIdAsync(orderSpec);
+            if (order == null) return;
+
+            var participantCount = order.Session.SessionJoins.Count;
+            var deliveryCostPerPerson = participantCount > 0
+                ? order.DeliveryCost / participantCount
+                : order.DeliveryCost;
+
+            // Group order details by participant
+            var detailsByUser = order.OrderDetails
+                .GroupBy(od => od.UserId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            foreach (var participant in order.Session.SessionJoins)
+            {
+                if (participant.User == null || string.IsNullOrEmpty(participant.User.Email)) continue;
+
+                detailsByUser.TryGetValue(participant.UserId, out var userDetails);
+                var itemsSubtotal = userDetails?.Sum(d => d.Price * d.Quantity) ?? 0;
+                var grandTotal = itemsSubtotal + deliveryCostPerPerson;
+
+                var itemLines = userDetails != null
+                    ? string.Join("\n", userDetails.Select(d =>
+                        $"  - {d.Item?.Name ?? "Item"} x{d.Quantity} @ {d.Price:C} = {d.Price * d.Quantity:C}"))
+                    : "  (no items recorded)";
+
+                var subject = $"Your Order from {order.Session.Restaurant.Name} is Confirmed!";
+                var body =
+                    $"Hello {participant.User.UserName},\n\n" +
+                    $"Great news! The order for '{order.Session.Restaurant.Name}' has been confirmed.\n\n" +
+                    $"Your Items:\n{itemLines}\n\n" +
+                    $"Items Subtotal:       {itemsSubtotal:C}\n" +
+                    $"Your Delivery Share:  {deliveryCostPerPerson:C}\n" +
+                    $"Your Total:           {grandTotal:C}\n\n" +
+                    $"The host ({order.Session.HostUser?.UserName}) will collect the full payment.\n\n" +
+                    "Bon appétit!";
+
+                await SendEmailAsync(participant.User.Email, subject, body, participant.UserId);
+            }
+        }
+
+        public async Task NotifyOrderDeliveredAsync(int orderId)
+        {
+            var orderSpec = new OrderWithDetailsSpec(orderId);
+            var order = await _unitOfWork.Repository<Order>().GetByIdAsync(orderSpec);
+            if (order == null) return;
+
+            foreach (var participant in order.Session.SessionJoins)
+            {
+                if (participant.User == null || string.IsNullOrEmpty(participant.User.Email)) continue;
+
+                var subject = $"Your food from {order.Session.Restaurant.Name} has arrived!";
+                var body =
+                    $"Hello {participant.User.UserName},\n\n" +
+                    $"Your order from '{order.Session.Restaurant.Name}' has been delivered!\n\n" +
+                    $"Please contact the host ({order.Session.HostUser?.UserName}) " +
+                    $"or come to collect your food.\n\n" +
+                    "Enjoy your meal!";
+
                 await SendEmailAsync(participant.User.Email, subject, body, participant.UserId);
             }
         }

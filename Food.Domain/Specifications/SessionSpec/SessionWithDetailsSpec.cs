@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,8 +16,8 @@ namespace Food.Domain.Specifications.SessionSpec
             Includes.Add(s => s.HostUser);
             Includes.Add(s => s.SessionJoins);
             Includes.Add(s => s.Order);
-            Includes.Add(s => s.Order.OrderDetails);
             IncludeStrings.Add("SessionJoins.User");
+            IncludeStrings.Add("Order.OrderDetails");
             IncludeStrings.Add("Order.OrderDetails.Item");
             IncludeStrings.Add("Order.OrderDetails.User");
         }

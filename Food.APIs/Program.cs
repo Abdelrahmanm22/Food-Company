@@ -88,7 +88,8 @@ namespace Food.APIs
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ISessionService, SessionService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
-            builder.Services.AddScoped<IRedisCartService,RedisCartService>();
+            builder.Services.AddScoped<IRedisCartService, RedisCartService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddIdentity<AppUser, IdentityRole>() 
                 .AddEntityFrameworkStores<FoodContext>();
             builder.Services.AddAuthentication(Options =>

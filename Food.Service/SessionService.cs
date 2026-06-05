@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -165,6 +165,19 @@ namespace Food.Service
             _unitOfWork.Repository<Session>().Update(session);
             await _unitOfWork.CompleteAsync();
             await _emailService.NotifyParticipantsSessionCancelledAsync(sessionId, session.Restaurant.Name);
+            return session;
+        }
+        public async Task<Session> CloseSessionAsync(int sessionId, string hostUserId)
+        {
+            var sessionSpec = new BaseSpecifications<Session>(s => s.Id == sessionId);
+            var session = await _unitOfWork.Repository<Session>().GetByIdAsync(sessionSpec);
+            if (session == null) throw new ArgumentException("Session not found.");
+            if (session.Status != SessionStatus.Open) throw new InvalidOperationException("Only open sessions can be closed.");
+            if (session.HostUserId != hostUserId) throw new UnauthorizedAccessException("Only the host can close the session.");
+
+            session.Status = SessionStatus.Closed;
+            _unitOfWork.Repository<Session>().Update(session);
+            await _unitOfWork.CompleteAsync();
             return session;
         }
     }
