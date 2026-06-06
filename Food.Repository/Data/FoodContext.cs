@@ -31,5 +31,7 @@ namespace Food.Repository.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Email> Emails { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
     }
 }
