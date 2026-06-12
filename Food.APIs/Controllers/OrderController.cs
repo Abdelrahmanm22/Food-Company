@@ -126,5 +126,32 @@ namespace Food.APIs.Controllers
             var mapped = _mapper.Map<Order, OrderToReturnDto>(order);
             return Ok(mapped);
         }
+        // GET api/Order/my  — orders where current user participated
+        [HttpGet("my")]
+        [ProducesResponseType(typeof(IEnumerable<MyOrderToReturnDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetMyOrders()
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null) return Unauthorized(new ApiErrorResponse(401));
+
+            var spec = new MyOrdersSpec(user.Id);
+            var orders = await _unitOfWork.Repository<Order>().GetAllAsync(spec);
+
+            // Map common fields via AutoMapper
+            var result = _mapper.Map<IEnumerable<Order>, List<MyOrderToReturnDto>>(orders);
+
+            // Fill in user-specific fields (items that belong to this user)
+            var orderList = orders.ToList();
+            for (int i = 0; i < orderList.Count; i++)
+            {
+                var myDetails = orderList[i].OrderDetails
+                    .Where(od => od.UserId == user.Id).ToList();
+                var myItemsTotal = myDetails.Sum(d => d.Price * d.Quantity);
+                result[i].MyItemsTotal = myItemsTotal;
+                result[i].MyGrandTotal = myItemsTotal + result[i].DeliveryCostPerPerson;
+                result[i].MyItems = _mapper.Map<List<OrderDetailToReturnDto>>(myDetails);
+            }
+            return Ok(result);
+        }
     }
 }

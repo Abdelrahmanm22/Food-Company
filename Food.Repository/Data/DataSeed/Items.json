@@ -1,0 +1,308 @@
+﻿[
+    {
+        "Name": "Foul & Falafel Plate",
+        "Price": 45.00,
+        "Description": "Egyptian breakfast with foul, falafel and bread",
+        "IsAvailable": true,
+        "CategoryId": 1
+    },
+    {
+        "Name": "Omelette Sandwich",
+        "Price": 35.00,
+        "Description": "Cheese and vegetable omelette sandwich",
+        "IsAvailable": true,
+        "CategoryId": 1
+    },
+
+    {
+        "Name": "Grilled Chicken Plate",
+        "Price": 150.00,
+        "Description": "Grilled chicken with rice and salad",
+        "IsAvailable": true,
+        "CategoryId": 2
+    },
+    {
+        "Name": "Koshary",
+        "Price": 60.00,
+        "Description": "Traditional Egyptian rice, lentils and pasta dish",
+        "IsAvailable": true,
+        "CategoryId": 2
+    },
+
+    {
+        "Name": "Club Sandwich",
+        "Price": 70.00,
+        "Description": "Triple-layer sandwich with chicken and egg",
+        "IsAvailable": true,
+        "CategoryId": 3
+    },
+    {
+        "Name": "Tuna Sandwich",
+        "Price": 65.00,
+        "Description": "Tuna salad sandwich",
+        "IsAvailable": true,
+        "CategoryId": 3
+    },
+
+    {
+        "Name": "Basbousa",
+        "Price": 30.00,
+        "Description": "Sweet semolina cake soaked in syrup",
+        "IsAvailable": true,
+        "CategoryId": 4
+    },
+    {
+        "Name": "Kunafa",
+        "Price": 40.00,
+        "Description": "Crispy shredded pastry with cream and syrup",
+        "IsAvailable": true,
+        "CategoryId": 4
+    },
+
+    {
+        "Name": "Fresh Orange Juice",
+        "Price": 30.00,
+        "Description": "Freshly squeezed orange juice",
+        "IsAvailable": true,
+        "CategoryId": 5
+    },
+    {
+        "Name": "Mango Juice",
+        "Price": 35.00,
+        "Description": "Fresh mango juice",
+        "IsAvailable": true,
+        "CategoryId": 5
+    },
+
+    {
+        "Name": "Margherita Pizza",
+        "Price": 120.00,
+        "Description": "Classic cheese and tomato pizza",
+        "IsAvailable": true,
+        "CategoryId": 6
+    },
+    {
+        "Name": "Pepperoni Pizza",
+        "Price": 145.00,
+        "Description": "Pizza topped with pepperoni slices",
+        "IsAvailable": true,
+        "CategoryId": 6
+    },
+    {
+        "Name": "Four Cheese Pizza",
+        "Price": 150.00,
+        "Description": "A blend of four cheeses",
+        "IsAvailable": true,
+        "CategoryId": 6
+    },
+
+    {
+        "Name": "Alfredo Pasta",
+        "Price": 95.00,
+        "Description": "Creamy white sauce pasta",
+        "IsAvailable": true,
+        "CategoryId": 7
+    },
+    {
+        "Name": "Bolognese Pasta",
+        "Price": 100.00,
+        "Description": "Pasta with rich meat sauce",
+        "IsAvailable": true,
+        "CategoryId": 7
+    },
+
+    {
+        "Name": "Tiramisu",
+        "Price": 55.00,
+        "Description": "Classic Italian coffee-flavored dessert",
+        "IsAvailable": true,
+        "CategoryId": 8
+    },
+    {
+        "Name": "Chocolate Lava Cake",
+        "Price": 60.00,
+        "Description": "Warm chocolate cake with molten center",
+        "IsAvailable": true,
+        "CategoryId": 8
+    },
+
+    {
+        "Name": "Lemon Mint Juice",
+        "Price": 28.00,
+        "Description": "Refreshing lemon and mint drink",
+        "IsAvailable": true,
+        "CategoryId": 9
+    },
+    {
+        "Name": "Strawberry Juice",
+        "Price": 32.00,
+        "Description": "Fresh strawberry juice",
+        "IsAvailable": true,
+        "CategoryId": 9
+    },
+
+    {
+        "Name": "Original Recipe Bucket",
+        "Price": 220.00,
+        "Description": "Bucket of crispy fried chicken",
+        "IsAvailable": true,
+        "CategoryId": 10
+    },
+    {
+        "Name": "Chicken Fillet Meal",
+        "Price": 130.00,
+        "Description": "Crispy chicken fillet with fries",
+        "IsAvailable": true,
+        "CategoryId": 10
+    },
+
+    {
+        "Name": "Zinger Burger",
+        "Price": 85.00,
+        "Description": "Spicy crispy chicken burger",
+        "IsAvailable": true,
+        "CategoryId": 11
+    },
+    {
+        "Name": "Cheese Burger",
+        "Price": 90.00,
+        "Description": "Beef burger with melted cheese",
+        "IsAvailable": true,
+        "CategoryId": 11
+    },
+
+    {
+        "Name": "Rice with Chicken Strips",
+        "Price": 110.00,
+        "Description": "Steamed rice with grilled chicken strips",
+        "IsAvailable": true,
+        "CategoryId": 12
+    },
+    {
+        "Name": "Chicken Shawarma Plate",
+        "Price": 100.00,
+        "Description": "Shawarma plate with rice and salad",
+        "IsAvailable": true,
+        "CategoryId": 12
+    },
+
+    {
+        "Name": "Mango Juice",
+        "Price": 35.00,
+        "Description": "Fresh mango juice",
+        "IsAvailable": true,
+        "CategoryId": 13
+    },
+    {
+        "Name": "Guava Juice",
+        "Price": 30.00,
+        "Description": "Fresh guava juice",
+        "IsAvailable": true,
+        "CategoryId": 13
+    },
+
+    {
+        "Name": "Saj Bread Wrap",
+        "Price": 40.00,
+        "Description": "Cheese and zaatar saj bread wrap",
+        "IsAvailable": true,
+        "CategoryId": 14
+    },
+    {
+        "Name": "Fried Eggs with Sausage",
+        "Price": 50.00,
+        "Description": "Fried eggs served with sausage and bread",
+        "IsAvailable": true,
+        "CategoryId": 14
+    },
+
+    {
+        "Name": "Grilled Half Chicken",
+        "Price": 160.00,
+        "Description": "Charcoal grilled chicken with rice",
+        "IsAvailable": true,
+        "CategoryId": 15
+    },
+    {
+        "Name": "Grilled Chicken Wrap",
+        "Price": 80.00,
+        "Description": "Grilled chicken in a soft wrap",
+        "IsAvailable": true,
+        "CategoryId": 15
+    },
+
+    {
+        "Name": "Grilled Mixed Grill",
+        "Price": 200.00,
+        "Description": "Assorted grilled meats with rice",
+        "IsAvailable": true,
+        "CategoryId": 16
+    },
+    {
+        "Name": "Stuffed Pigeon",
+        "Price": 180.00,
+        "Description": "Traditional stuffed grilled pigeon",
+        "IsAvailable": true,
+        "CategoryId": 16
+    },
+
+    {
+        "Name": "Om Ali",
+        "Price": 45.00,
+        "Description": "Traditional Egyptian bread pudding dessert",
+        "IsAvailable": true,
+        "CategoryId": 17
+    },
+    {
+        "Name": "Rice Pudding",
+        "Price": 35.00,
+        "Description": "Creamy rice pudding with cinnamon",
+        "IsAvailable": true,
+        "CategoryId": 17
+    },
+
+    {
+        "Name": "Kung Pao Chicken",
+        "Price": 135.00,
+        "Description": "Spicy stir-fried chicken with peanuts",
+        "IsAvailable": true,
+        "CategoryId": 18
+    },
+    {
+        "Name": "Sweet and Sour Chicken",
+        "Price": 130.00,
+        "Description": "Chicken in sweet and sour sauce",
+        "IsAvailable": true,
+        "CategoryId": 18
+    },
+
+    {
+        "Name": "Spring Rolls",
+        "Price": 55.00,
+        "Description": "Crispy vegetable spring rolls",
+        "IsAvailable": true,
+        "CategoryId": 19
+    },
+    {
+        "Name": "Dumplings",
+        "Price": 60.00,
+        "Description": "Steamed chicken dumplings",
+        "IsAvailable": true,
+        "CategoryId": 19
+    },
+
+    {
+        "Name": "Sesame Balls",
+        "Price": 40.00,
+        "Description": "Sweet glutinous rice balls with sesame",
+        "IsAvailable": true,
+        "CategoryId": 20
+    },
+    {
+        "Name": "Mango Pudding",
+        "Price": 45.00,
+        "Description": "Chilled mango pudding dessert",
+        "IsAvailable": true,
+        "CategoryId": 20
+    }
+]

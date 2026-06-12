@@ -40,6 +40,17 @@ namespace Food.APIs.Helpers
                 .ForMember(d => d.ItemName, o => o.MapFrom(s => s.Item.Name))
                 .ForMember(d => d.UserName, o => o.MapFrom(s => s.User != null ? s.User.UserName : ""))
                 .ForMember(d => d.SubTotal, o => o.MapFrom(s => s.Price * s.Quantity));
+
+            // My Orders mapping (per-user view — user-specific fields set manually in controller)
+            CreateMap<Order, MyOrderToReturnDto>()
+                .ForMember(d => d.RestaurantName, o => o.MapFrom(s => s.Session.Restaurant.Name))
+                .ForMember(d => d.HostUserName, o => o.MapFrom(s => s.Session.HostUser.UserName))
+                .ForMember(d => d.DeliveryCostPerPerson, o => o.MapFrom(s =>
+                    s.Session.SessionJoins.Count > 0 ? s.DeliveryCost / s.Session.SessionJoins.Count : 0))
+                // MyItemsTotal, MyGrandTotal, MyItems are set manually in the controller (user-specific)
+                .ForMember(d => d.MyItemsTotal, o => o.Ignore())
+                .ForMember(d => d.MyGrandTotal, o => o.Ignore())
+                .ForMember(d => d.MyItems, o => o.Ignore());
         }
     }
 }

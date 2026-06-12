@@ -21,13 +21,15 @@ namespace Food.APIs.Controllers
         private readonly ISessionService _sessionService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IRedisCartService _redisCartService;
 
-        public SessionController(UserManager<AppUser> userManager, ISessionService sessionService, IUnitOfWork unitOfWork, IMapper mapper)
+        public SessionController(UserManager<AppUser> userManager, ISessionService sessionService, IUnitOfWork unitOfWork, IMapper mapper,IRedisCartService redisCartService)
         {
             _userManager = userManager;
             _sessionService = sessionService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _redisCartService = redisCartService;
         }
 
         private async Task<AppUser?> GetCurrentUserAsync()
@@ -42,6 +44,21 @@ namespace Food.APIs.Controllers
         [ProducesResponseType(typeof(IEnumerable<SessionToReturnDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllSessions([FromQuery] SessionSpecParams specParams)
         {
+            var spec = new SessionWithDetailsSpec(specParams);
+            var sessions = await _unitOfWork.Repository<Session>().GetAllAsync(spec);
+            var mapped = _mapper.Map<IEnumerable<Session>, IEnumerable<SessionToReturnDto>>(sessions);
+            return Ok(mapped);
+        }
+
+        // GET api/Session/my  — sessions the current user hosted or joined
+        [HttpGet("my")]
+        [ProducesResponseType(typeof(IEnumerable<SessionToReturnDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetMySessions([FromQuery] SessionSpecParams specParams)
+        {
+            var user = await GetCurrentUserAsync();
+            if(user == null) return Unauthorized(new ApiErrorResponse(401));
+
+            specParams.UserId = user.Id;
             var spec = new SessionWithDetailsSpec(specParams);
             var sessions = await _unitOfWork.Repository<Session>().GetAllAsync(spec);
             var mapped = _mapper.Map<IEnumerable<Session>, IEnumerable<SessionToReturnDto>>(sessions);
@@ -198,6 +215,38 @@ namespace Food.APIs.Controllers
             {
                 return BadRequest(new ApiErrorResponse(400, ex.Message));
             }
+        }
+        // GET api/Session/{id}/carts  — host previews all participants' carts
+        [HttpGet("{id}/carts")]
+        [ProducesResponseType(typeof(IEnumerable<ParticipantCartDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAllCarts(int id)
+        {
+            var user = await GetCurrentUserAsync();
+            if (user == null) return Unauthorized(new ApiErrorResponse(401));
+            var spec = new SessionWithDetailsSpec(id);
+            var session = await _unitOfWork.Repository<Session>().GetByIdAsync(spec);
+            if (session == null) return NotFound(new ApiErrorResponse(404, "Session not found."));
+            if (session.HostUserId != user.Id)
+                return StatusCode(StatusCodes.Status403Forbidden,
+                    new ApiErrorResponse(403, "Only the host can view all participants' carts."));
+            var result = new List<ParticipantCartDto>();
+            foreach (var participant in session.SessionJoins)
+            {
+                var cartKey = $"cart:{id}:{participant.UserId}";
+                var cart = await _redisCartService.GetCartAsync(cartKey);
+                if (cart != null)
+                {
+                    result.Add(new ParticipantCartDto
+                    {
+                        UserId = participant.UserId,
+                        UserName = participant.User?.UserName ?? "",
+                        Cart = _mapper.Map<SessionCart, SessionCartToReturnDto>(cart)
+                    });
+                }
+            }
+            return Ok(result);
         }
     }
 }

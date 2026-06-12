@@ -41,6 +41,36 @@ namespace Food.Repository.Data
                     await dbContext.SaveChangesAsync();
                 }
             }
+
+            //Seed Categories
+            if (!dbContext.Categories.Any())
+            {
+                var CategoriesData = File.ReadAllText("../Food.Repository/Data/DataSeed/Categories.json");
+                var Categories = JsonSerializer.Deserialize<List<Category>>(CategoriesData);
+                if (Categories?.Count > 0)
+                {
+                    foreach (var category in Categories)
+                    {
+                        await dbContext.Set<Category>().AddAsync(category);
+                    }
+                    await dbContext.SaveChangesAsync();
+                }
+            }
+
+            //Seed Items
+            if (!dbContext.Items.Any())
+            {
+                var ItemsData = File.ReadAllText("../Food.Repository/Data/DataSeed/Items.json");
+                var Items = JsonSerializer.Deserialize<List<Item>>(ItemsData);
+                if (Items?.Count > 0)
+                {
+                    foreach (var item in Items)
+                    {
+                        await dbContext.Set<Item>().AddAsync(item);
+                    }
+                    await dbContext.SaveChangesAsync();
+                }
+            }
         }
     }
 }

@@ -25,7 +25,10 @@ namespace Food.Domain.Specifications.SessionSpec
         public SessionWithDetailsSpec(SessionSpecParams specParams)
             : base(s=>
                 (!specParams.Status.HasValue || s.Status == specParams.Status.Value) &&
-                (!specParams.RestaurantId.HasValue || s.RestaurantId == specParams.RestaurantId.Value)
+                (!specParams.RestaurantId.HasValue || s.RestaurantId == specParams.RestaurantId.Value) &&
+                (string.IsNullOrEmpty(specParams.UserId) ||
+                    s.HostUserId == specParams.UserId ||
+                    s.SessionJoins.Any(sj => sj.UserId == specParams.UserId))
             )
         {
             Includes.Add(s => s.Restaurant);

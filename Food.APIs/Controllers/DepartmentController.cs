@@ -1,8 +1,9 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Food.APIs.DTOs;
 using Food.Domain;
 using Food.Domain.Models;
 using Food.Domain.Specifications.DepartmentSpec;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Food.APIs.Controllers
@@ -19,6 +20,7 @@ namespace Food.APIs.Controllers
             this.logger = logger;
             this.mapper = mapper;
         }
+        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<DepartmentToReturnDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetDepartments()

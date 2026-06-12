@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +11,7 @@ namespace Food.Domain.Specifications.SessionSpec
     {
         public SessionStatus? Status { get; set; }
         public int? RestaurantId { get; set; }
+        public string? UserId { get; set; }
         private int pageSize = 10;
         public int PageSize
         {

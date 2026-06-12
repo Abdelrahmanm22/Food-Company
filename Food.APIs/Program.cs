@@ -138,8 +138,8 @@ namespace Food.APIs
                 #region Data Seeding
                 var roleManager = Services.GetRequiredService<RoleManager<IdentityRole>>();
                 var userManager = Services.GetRequiredService<UserManager<AppUser>>();
-                await AppIdentityDbContextSeed.SeedUserAsync(userManager, roleManager);
                 await FoodContextSeed.SeedAsync(DbContext);
+                await AppIdentityDbContextSeed.SeedUserAsync(userManager, roleManager);
                 #endregion
             }
             catch (Exception ex)

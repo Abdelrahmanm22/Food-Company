@@ -28,7 +28,7 @@ namespace Food.Repository.Data
                 {
                     UserName = "Admin",
                     Email = "abdra1396@gmail.com",
-                    PhoneNumber = "01015496488"
+                    PhoneNumber = "01015496488",
                 };
                 await userManager.CreateAsync(Admin, "Ar115599@");
                 await userManager.AddToRoleAsync(Admin, UserRoles.Admin);
@@ -37,18 +37,31 @@ namespace Food.Repository.Data
                 {
                     UserName = "abdelrahman",
                     Email = "abdelrahmanmohamed2293@gmail.com",
-                    PhoneNumber = "01015496488"
+                    PhoneNumber = "01015496488",
+                    DepartmentId = 1
                 };
                 await userManager.CreateAsync(Employee, "Ar115599@");
                 await userManager.AddToRoleAsync(Employee, UserRoles.Employee);
+
                 var Employee2 = new AppUser
                 {
                     UserName = "Khaled",
                     Email = "Khaledmramadan136@gmail.com",
-                    PhoneNumber = "01015496488"
+                    PhoneNumber = "01015496488",
+                    DepartmentId = 2
                 };
                 await userManager.CreateAsync(Employee2, "Ar115599@");
                 await userManager.AddToRoleAsync(Employee2, UserRoles.Employee);
+
+                var Employee3 = new AppUser
+                {
+                    UserName = "Omar",
+                    Email = "omar.ramadan2845@gmail.com",
+                    PhoneNumber = "01015496488",
+                    DepartmentId = 3
+                };
+                await userManager.CreateAsync(Employee3, "Ar115599@");
+                await userManager.AddToRoleAsync(Employee3, UserRoles.Employee);
             }
         }
     }

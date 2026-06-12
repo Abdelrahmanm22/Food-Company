@@ -1,4 +1,5 @@
-﻿using Food.APIs.DTOs;
+﻿using System.Security.Claims;
+using Food.APIs.DTOs;
 using Food.APIs.Errors;
 using Food.Domain.Models.Identity;
 using Food.Domain.Services;
@@ -90,6 +91,27 @@ namespace Food.APIs.Controllers
                 Email = result.Email,
                 AccessToken = result.AccessToken,
                 RefreshToken = result.RefreshToken
+            });
+        }
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<ActionResult<UserProfileDto>> GetCurrentUser()
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrEmpty(email)) return Unauthorized(new ApiErrorResponse(401));
+
+            var user = await userManager.Users
+                .Include(u=>u.Department)
+                .SingleOrDefaultAsync(u => u.Email == email);
+            if (user is null) return Unauthorized(new ApiErrorResponse(401));
+
+            return Ok(new UserProfileDto
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                DepartmentName = user.Department?.Name
             });
         }
     }

@@ -1,0 +1,90 @@
+﻿[
+    {
+        "Name": "Breakfast",
+        "RestaurantId": 1
+    },
+    {
+        "Name": "Lunch",
+        "RestaurantId": 1
+    },
+    {
+        "Name": "Sandwiches",
+        "RestaurantId": 1
+    },
+    {
+        "Name": "Sweets",
+        "RestaurantId": 1
+    },
+    {
+        "Name": "Juices",
+        "RestaurantId": 1
+    },
+
+    {
+        "Name": "Pizza",
+        "RestaurantId": 2
+    },
+    {
+        "Name": "Pasta",
+        "RestaurantId": 2
+    },
+    {
+        "Name": "Sweets",
+        "RestaurantId": 2
+    },
+    {
+        "Name": "Juices",
+        "RestaurantId": 2
+    },
+
+    {
+        "Name": "Chicken Meals",
+        "RestaurantId": 3
+    },
+    {
+        "Name": "Burgers",
+        "RestaurantId": 3
+    },
+    {
+        "Name": "Lunch",
+        "RestaurantId": 3
+    },
+    {
+        "Name": "Juices",
+        "RestaurantId": 3
+    },
+
+    {
+        "Name": "Breakfast",
+        "RestaurantId": 4
+    },
+    {
+        "Name": "Grilled Chicken",
+        "RestaurantId": 4
+    },
+    {
+        "Name": "Lunch",
+        "RestaurantId": 4
+    },
+    {
+        "Name": "Sweets",
+        "RestaurantId": 4
+    },
+
+    {
+        "Name": "Asian Mains",
+        "RestaurantId": 5
+    },
+    {
+        "Name": "Appetizers",
+        "RestaurantId": 5
+    },
+    {
+        "Name": "Sweets",
+        "RestaurantId": 5
+    },
+    {
+        "Name": "Juices",
+        "RestaurantId": 5
+    }
+]
