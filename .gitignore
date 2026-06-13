@@ -60,3 +60,7 @@ packages/
 # Temporary files
 *.tmp
 *.temp
+
+# Claude AI memory file
+CLAUDE.md
+**/CLAUDE.md
