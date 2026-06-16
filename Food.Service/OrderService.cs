@@ -10,6 +10,7 @@ using Food.Domain.Services;
 using Food.Domain.Specifications;
 using Food.Domain.Specifications.OrderSpec;
 using Food.Domain.Specifications.SessionSpec;
+using Hangfire;
 
 namespace Food.Service
 {
@@ -18,12 +19,14 @@ namespace Food.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisCartService _redisCartService;
         private readonly IEmailService _emailService;
+        private readonly IBackgroundJobClient _backgroundJobClient;
 
-        public OrderService(IUnitOfWork unitOfWork, IRedisCartService redisCartService, IEmailService emailService)
+        public OrderService(IUnitOfWork unitOfWork, IRedisCartService redisCartService, IEmailService emailService, IBackgroundJobClient backgroundJobClient)
         {
             _unitOfWork = unitOfWork;
             _redisCartService = redisCartService;
             _emailService = emailService;
+            _backgroundJobClient = backgroundJobClient;
         }
 
         public async Task<Order> ConfirmOrderAsync(int sessionId, string hostUserId)
@@ -100,7 +103,8 @@ namespace Food.Service
             await _redisCartService.DeleteAllCartsForSessionAsync(sessionId, participantIds);
 
             // 7. Notify all participants
-            await _emailService.NotifyOrderConfirmedAsync(order.Id);
+            _backgroundJobClient.Enqueue<IEmailService>(service =>
+                service.NotifyOrderConfirmedAsync(order.Id));
 
             // 8. Return the order with full details
             var fullOrderSpec = new OrderWithDetailsSpec(order.Id);
@@ -145,7 +149,8 @@ namespace Food.Service
 
             // 6. Send delivery notification if the order is now Delivered
             if (newStatus == OrderStatus.Delivered)
-                await _emailService.NotifyOrderDeliveredAsync(orderId);
+                _backgroundJobClient.Enqueue<IEmailService>(service =>
+                    service.NotifyOrderDeliveredAsync(orderId));
 
             return order;
         }

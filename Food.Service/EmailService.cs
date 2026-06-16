@@ -11,6 +11,7 @@ using Food.Domain.Models.Identity;
 using Food.Domain.Services;
 using Food.Domain.Specifications.SessionSpec;
 using Food.Domain.Specifications.OrderSpec;
+using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -23,14 +24,25 @@ namespace Food.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<EmailService> _logger;
         private readonly UserManager<AppUser> _userManager;
+        private readonly IBackgroundJobClient _backgroundJobClient;
 
-        public EmailService(IConfiguration configuration,IUnitOfWork unitOfWork,ILogger<EmailService> logger, UserManager<AppUser> userManager)
+        // Delay between individual email jobs (seconds) — keeps within Mailtrap free tier rate limit
+        private const int EmailIntervalSeconds = 60;
+
+        public EmailService(
+            IConfiguration configuration,
+            IUnitOfWork unitOfWork,
+            ILogger<EmailService> logger,
+            UserManager<AppUser> userManager,
+            IBackgroundJobClient backgroundJobClient)
         {
             _configuration = configuration;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _userManager = userManager;
+            _backgroundJobClient = backgroundJobClient;
         }
+
         public async Task SendEmailAsync(string to, string subject, string body, string userId)
         {
             var email = new Email
@@ -51,7 +63,7 @@ namespace Food.Service
                 var password = smtpSettings["Password"];
                 var from = smtpSettings["From"];
 
-                if(!string.IsNullOrEmpty(host) && !string.IsNullOrEmpty(portStr))
+                if (!string.IsNullOrEmpty(host) && !string.IsNullOrEmpty(portStr))
                 {
                     using (var client = new SmtpClient(host, int.Parse(portStr))
                     {
@@ -61,15 +73,20 @@ namespace Food.Service
                     {
                         await client.SendMailAsync(from, to, subject, body);
                     }
+                    email.IsSent = true;
                     _logger.LogInformation("Email sent successfully to {To} with subject {Subject}", to, subject);
                 }
                 else
                 {
+                    email.IsSent = false;
+                    email.ErrorMessage = "SMTP settings are not fully configured.";
                     _logger.LogWarning("SMTP Settings not fully configured. Email was not sent.");
                 }
-
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
+                email.IsSent = false;
+                email.ErrorMessage = ex.Message;
                 _logger.LogError(ex, "Failed to send email to {To} with subject {Subject}", to, subject);
             }
 
@@ -83,27 +100,51 @@ namespace Food.Service
                 _logger.LogError(ex, "Failed to save email log to the database");
             }
         }
+
+        /// <summary>
+        /// Orchestrator job — queries all employees then schedules one SendEmailAsync
+        /// job per employee with a staggered delay to stay within Mailtrap rate limits.
+        /// </summary>
         public async Task NotifyEmployeesForNewSessionAsync(string restaurantName, string? notes, string? excludeUserId = null)
         {
             var employees = await _userManager.GetUsersInRoleAsync(UserRoles.Employee);
-            foreach(var employee in employees)
+            int delaySeconds = 2;
+
+            foreach (var employee in employees)
             {
                 if (string.IsNullOrEmpty(employee.Email)) continue;
                 if (excludeUserId != null && employee.Id == excludeUserId) continue;
+
                 var subject = "New Food Session Started!";
                 var body = $"Hello {employee.UserName},\n\n" +
                            $"A new food session has been started at {restaurantName}.\n" +
                            $"Session Notes: {notes ?? "No notes provided"}\n\n" +
                            $"Join the session and place your order before it closes!\n\n" +
                            "Bon appétit!";
-                await SendEmailAsync(employee.Email, subject, body, employee.Id);
+
+                // Capture loop variables for the closure
+                var recipientEmail = employee.Email;
+                var recipientId = employee.Id;
+
+                _backgroundJobClient.Schedule<IEmailService>(
+                    service => service.SendEmailAsync(recipientEmail, subject, body, recipientId),
+                    TimeSpan.FromSeconds(delaySeconds));
+
+                delaySeconds += EmailIntervalSeconds;
             }
         }
+
+        /// <summary>
+        /// Orchestrator job — queries all session participants then schedules one SendEmailAsync
+        /// job per participant with a staggered delay to stay within Mailtrap rate limits.
+        /// </summary>
         public async Task NotifyParticipantsSessionCancelledAsync(int sessionId, string restaurantName)
         {
             var sessionSpec = new SessionWithDetailsSpec(sessionId);
             var session = await _unitOfWork.Repository<Session>().GetByIdAsync(sessionSpec);
             if (session == null) return;
+
+            int delaySeconds = 0;
 
             foreach (var participant in session.SessionJoins)
             {
@@ -114,9 +155,24 @@ namespace Food.Service
                            $"The Food session for '{restaurantName}' has been cancelled by the host ({session.HostUser.UserName}).\n" +
                            $"Any items in your cart for this session have been cleared.\n\n" +
                            $"Best regards.";
-                await SendEmailAsync(participant.User.Email, subject, body, participant.UserId);
+
+                // Capture loop variables for the closure
+                var recipientEmail = participant.User.Email;
+                var recipientId = participant.UserId;
+
+                _backgroundJobClient.Schedule<IEmailService>(
+                    service => service.SendEmailAsync(recipientEmail, subject, body, recipientId),
+                    TimeSpan.FromSeconds(delaySeconds));
+
+                delaySeconds += EmailIntervalSeconds;
             }
         }
+
+        /// <summary>
+        /// Orchestrator job — builds a personalized email per participant (with their items,
+        /// subtotal, delivery share) then schedules one SendEmailAsync job per participant
+        /// with a staggered delay to stay within Mailtrap rate limits.
+        /// </summary>
         public async Task NotifyOrderConfirmedAsync(int orderId)
         {
             var orderSpec = new OrderWithDetailsSpec(orderId);
@@ -132,6 +188,8 @@ namespace Food.Service
             var detailsByUser = order.OrderDetails
                 .GroupBy(od => od.UserId)
                 .ToDictionary(g => g.Key, g => g.ToList());
+
+            int delaySeconds = 0;
 
             foreach (var participant in order.Session.SessionJoins)
             {
@@ -157,15 +215,29 @@ namespace Food.Service
                     $"The host ({order.Session.HostUser?.UserName}) will collect the full payment.\n\n" +
                     "Bon appétit!";
 
-                await SendEmailAsync(participant.User.Email, subject, body, participant.UserId);
+                // Capture loop variables for the closure
+                var recipientEmail = participant.User.Email;
+                var recipientId = participant.UserId;
+
+                _backgroundJobClient.Schedule<IEmailService>(
+                    service => service.SendEmailAsync(recipientEmail, subject, body, recipientId),
+                    TimeSpan.FromSeconds(delaySeconds));
+
+                delaySeconds += EmailIntervalSeconds;
             }
         }
 
+        /// <summary>
+        /// Orchestrator job — schedules one SendEmailAsync job per participant with a staggered
+        /// delay to stay within Mailtrap rate limits.
+        /// </summary>
         public async Task NotifyOrderDeliveredAsync(int orderId)
         {
             var orderSpec = new OrderWithDetailsSpec(orderId);
             var order = await _unitOfWork.Repository<Order>().GetByIdAsync(orderSpec);
             if (order == null) return;
+
+            int delaySeconds = 0;
 
             foreach (var participant in order.Session.SessionJoins)
             {
@@ -179,7 +251,15 @@ namespace Food.Service
                     $"or come to collect your food.\n\n" +
                     "Enjoy your meal!";
 
-                await SendEmailAsync(participant.User.Email, subject, body, participant.UserId);
+                // Capture loop variables for the closure
+                var recipientEmail = participant.User.Email;
+                var recipientId = participant.UserId;
+
+                _backgroundJobClient.Schedule<IEmailService>(
+                    service => service.SendEmailAsync(recipientEmail, subject, body, recipientId),
+                    TimeSpan.FromSeconds(delaySeconds));
+
+                delaySeconds += EmailIntervalSeconds;
             }
         }
     }

@@ -9,6 +9,7 @@ using Food.Domain.Models;
 using Food.Domain.Services;
 using Food.Domain.Specifications;
 using Food.Domain.Specifications.SessionSpec;
+using Hangfire;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Food.Service
@@ -18,12 +19,14 @@ namespace Food.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
         private readonly IRedisCartService _redisCartService;
+        private readonly IBackgroundJobClient _backgroundJobClient;
 
-        public SessionService(IUnitOfWork unitOfWork,IEmailService emailService,IRedisCartService redisCartService)
+        public SessionService(IUnitOfWork unitOfWork, IEmailService emailService, IRedisCartService redisCartService, IBackgroundJobClient backgroundJobClient)
         {
             _unitOfWork = unitOfWork;
             _emailService = emailService;
             _redisCartService = redisCartService;
+            _backgroundJobClient = backgroundJobClient;
         }
         public async Task<Session> CreateSessionAsync(string hostUserId, int restarantId, string? notes)
         {
@@ -52,7 +55,8 @@ namespace Food.Service
             await _unitOfWork.Repository<SessionJoin>().AddAsync(hostJoin);
             await _unitOfWork.CompleteAsync();
 
-            await _emailService.NotifyEmployeesForNewSessionAsync(restaurant.Name, notes, hostUserId);
+            _backgroundJobClient.Enqueue<IEmailService>(service =>
+                service.NotifyEmployeesForNewSessionAsync(restaurant.Name, notes, hostUserId));
 
             return session;
 
@@ -164,7 +168,8 @@ namespace Food.Service
 
             _unitOfWork.Repository<Session>().Update(session);
             await _unitOfWork.CompleteAsync();
-            await _emailService.NotifyParticipantsSessionCancelledAsync(sessionId, session.Restaurant.Name);
+            _backgroundJobClient.Enqueue<IEmailService>(service =>
+                service.NotifyParticipantsSessionCancelledAsync(sessionId, session.Restaurant.Name));
             return session;
         }
         public async Task<Session> CloseSessionAsync(int sessionId, string hostUserId)

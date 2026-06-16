@@ -11,6 +11,7 @@ using Food.Domain.Services;
 using Food.Repository;
 using Food.Repository.Data;
 using Food.Service;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +61,13 @@ namespace Food.APIs
             {
                 Options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+            // Hangfire — background job processing
+            builder.Services.AddHangfire(config => config
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddHangfireServer();
             builder.Services.AddSingleton<IConnectionMultiplexer>(Options =>
             {
                 var Connection = builder.Configuration.GetConnectionString("RedisConnection");
@@ -163,6 +171,7 @@ namespace Food.APIs
             app.UseCors("AllowFrontend");
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseHangfireDashboard("/hangfire");
             app.UseStaticFiles();
 
 
