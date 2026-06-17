@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +8,7 @@ using Food.Domain;
 using Food.Domain.Models;
 using Food.Domain.Repositories;
 using Food.Repository.Data;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Food.Repository
 {
@@ -15,20 +16,61 @@ namespace Food.Repository
     {
         private readonly FoodContext dbContext;
         private Hashtable _repositories;
+        private IDbContextTransaction? _currentTransaction;
 
         public UnitOfWork(FoodContext dbContext)
         {
             this.dbContext = dbContext;
             _repositories = new Hashtable();
         }
+
         public async Task<int> CompleteAsync()
         {
             return await dbContext.SaveChangesAsync();
         }
 
-        public ValueTask DisposeAsync()
+        // ─── Transaction Management ────────────────────────────────────────────
+        // Ensures a group of DB operations behaves as one atomic unit:
+        //   Either all operations succeed (CommitTransactionAsync),
+        //   or all operations fail and rollback (RollbackTransactionAsync).
+
+        public async Task BeginTransactionAsync()
         {
-            return dbContext.DisposeAsync();
+            _currentTransaction = await dbContext.Database.BeginTransactionAsync();
+        }
+
+        public async Task CommitTransactionAsync()
+        {
+            if (_currentTransaction != null)
+            {
+                await _currentTransaction.CommitAsync();
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
+            }
+        }
+
+        public async Task RollbackTransactionAsync()
+        {
+            if (_currentTransaction != null)
+            {
+                await _currentTransaction.RollbackAsync();
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
+            }
+        }
+
+        // ─── Dispose ──────────────────────────────────────────────────────────
+
+        public async ValueTask DisposeAsync()
+        {
+            // Rollback any open transaction before disposing to prevent connection leaks
+            if (_currentTransaction != null)
+            {
+                await _currentTransaction.RollbackAsync();
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
+            }
+            await dbContext.DisposeAsync();
         }
 
         public IGenericRepository<TEntity> Repository<TEntity>() where TEntity : BaseModel

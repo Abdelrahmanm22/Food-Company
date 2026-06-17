@@ -90,19 +90,33 @@ namespace Food.Service
                 OrderDetails = orderDetails
             };
 
-            await _unitOfWork.Repository<Order>().AddAsync(order);
+            // 5. Persist Order + Session status update atomically.
+            //    If either write fails the entire transaction is rolled back —
+            //    preventing an Order record without a matching Ordered session (or vice-versa).
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                await _unitOfWork.Repository<Order>().AddAsync(order);
 
-            // 5. Update session status → Ordered
-            session.Status = SessionStatus.Ordered;
-            session.EndDate = DateTime.UtcNow;
-            _unitOfWork.Repository<Session>().Update(session);
+                // Update session status → Ordered
+                session.Status = SessionStatus.Ordered;
+                session.EndDate = DateTime.UtcNow;
+                _unitOfWork.Repository<Session>().Update(session);
 
-            await _unitOfWork.CompleteAsync();
+                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
 
-            // 6. Clear all Redis carts for this session
+            // 6. Clear all Redis carts AFTER the transaction commits so that
+            //    we only discard carts when the Order is durably persisted.
             await _redisCartService.DeleteAllCartsForSessionAsync(sessionId, participantIds);
 
-            // 7. Notify all participants
+            // 7. Notify all participants (enqueued after commit — no email for failed orders)
             _backgroundJobClient.Enqueue<IEmailService>(service =>
                 service.NotifyOrderConfirmedAsync(order.Id));
 

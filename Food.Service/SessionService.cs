@@ -32,7 +32,8 @@ namespace Food.Service
         {
             var restaurantSpec = new BaseSpecifications<Restaurant>(r => r.Id == restarantId);
             var restaurant = await _unitOfWork.Repository<Restaurant>().GetByIdAsync(restaurantSpec);
-            if (restaurant == null)  throw new ArgumentException("Restaurnat Not Found.");
+            if (restaurant == null) throw new ArgumentException("Restaurnat Not Found.");
+
             var session = new Session
             {
                 HostUserId = hostUserId,
@@ -42,24 +43,41 @@ namespace Food.Service
                 Status = SessionStatus.Open,
                 StartDate = DateTime.UtcNow
             };
-            await _unitOfWork.Repository<Session>().AddAsync(session);
-            await _unitOfWork.CompleteAsync();
 
-            // Host Automatically Joins the Session
-            var hostJoin = new SessionJoin
+            // Wrap both saves in one transaction:
+            //   Step 1 needs CompleteAsync to get the DB-generated session.Id.
+            //   Step 2 uses that Id to create the host SessionJoin.
+            //   If either save fails the entire transaction is rolled back.
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                SessionId = session.Id,
-                UserId = hostUserId,
-                JoinedAt = DateTime.UtcNow
-            };
-            await _unitOfWork.Repository<SessionJoin>().AddAsync(hostJoin);
-            await _unitOfWork.CompleteAsync();
+                await _unitOfWork.Repository<Session>().AddAsync(session);
+                await _unitOfWork.CompleteAsync(); // Flush to get session.Id
 
+                // Host Automatically Joins the Session
+                var hostJoin = new SessionJoin
+                {
+                    SessionId = session.Id,
+                    UserId = hostUserId,
+                    JoinedAt = DateTime.UtcNow
+                };
+                await _unitOfWork.Repository<SessionJoin>().AddAsync(hostJoin);
+                await _unitOfWork.CompleteAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
+
+            // Email notification is enqueued AFTER the transaction commits so that
+            // employees are never notified about a session that didn't persist.
             _backgroundJobClient.Enqueue<IEmailService>(service =>
                 service.NotifyEmployeesForNewSessionAsync(restaurant.Name, notes, hostUserId));
 
             return session;
-
         }
         public async Task<SessionJoin> JoinSessionAsync(int sessionId, string userId, List<CartItem> items)
         {
@@ -114,15 +132,30 @@ namespace Food.Service
                 Items = cartItems
             };
 
+            // Save the cart to Redis first (we need it before confirming the join).
+            // If the subsequent DB save fails, we compensate by removing the Redis cart
+            // to keep both stores in sync.
             await _redisCartService.UpdateCartAsync(cart);
+
             var sessionJoin = new SessionJoin
             {
                 SessionId = sessionId,
                 UserId = userId,
                 JoinedAt = DateTime.UtcNow
             };
-            await _unitOfWork.Repository<SessionJoin>().AddAsync(sessionJoin);
-            await _unitOfWork.CompleteAsync();
+
+            try
+            {
+                await _unitOfWork.Repository<SessionJoin>().AddAsync(sessionJoin);
+                await _unitOfWork.CompleteAsync();
+            }
+            catch
+            {
+                // Compensating action: remove the Redis cart we just wrote
+                // so the user's cart state is not left dangling without a SessionJoin record.
+                await _redisCartService.DeleteCartAsync($"cart:{sessionId}:{userId}");
+                throw;
+            }
 
             var joinSpec = new SessionJoinSpec(sessionId, userId);
             var joined = await _unitOfWork.Repository<SessionJoin>().GetByIdAsync(joinSpec);
