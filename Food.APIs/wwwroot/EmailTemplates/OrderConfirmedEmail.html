@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Your Order is Confirmed!</title>
+  <style>
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; display: block; }
+
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background-color: #F4F4F7;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .email-wrapper {
+      width: 100%;
+      background-color: #F4F4F7;
+      padding: 30px 0;
+    }
+
+    .email-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #FFFFFF;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    /* Header */
+    .email-header {
+      background-color: #2D2D2D;
+      padding: 28px 40px;
+      text-align: center;
+    }
+    .email-header img {
+      height: 50px;
+      width: auto;
+      margin: 0 auto;
+    }
+
+    /* Hero Banner — green tone for success */
+    .email-hero {
+      background: linear-gradient(135deg, #27AE60 0%, #1E8449 100%);
+      padding: 36px 40px;
+      text-align: center;
+    }
+    .email-hero .hero-icon {
+      font-size: 52px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .email-hero h1 {
+      margin: 0;
+      color: #FFFFFF;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .email-hero p {
+      margin: 8px 0 0;
+      color: rgba(255,255,255,0.85);
+      font-size: 15px;
+    }
+
+    /* Body */
+    .email-body {
+      padding: 36px 40px;
+    }
+
+    .greeting {
+      font-size: 16px;
+      color: #333333;
+      margin: 0 0 16px 0;
+      font-weight: 600;
+    }
+    .intro-text {
+      font-size: 15px;
+      color: #51545E;
+      line-height: 1.6;
+      margin: 0 0 28px 0;
+    }
+
+    /* Section Title */
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #F47B20;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin: 0 0 12px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #FFE0C2;
+    }
+
+    /* Order Items Table */
+    .order-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 0 28px 0;
+      font-size: 14px;
+    }
+    .order-table thead tr {
+      background-color: #F47B20;
+      color: #FFFFFF;
+    }
+    .order-table thead th {
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .order-table thead th:last-child { text-align: right; }
+    .order-table tbody tr {
+      border-bottom: 1px solid #F0F0F5;
+    }
+    .order-table tbody tr:nth-child(even) {
+      background-color: #FAFAFA;
+    }
+    .order-table tbody td {
+      padding: 12px 14px;
+      color: #333333;
+      vertical-align: middle;
+    }
+    .order-table tbody td:last-child {
+      text-align: right;
+      font-weight: 600;
+      color: #333333;
+    }
+    .order-table .item-name { font-weight: 600; color: #222222; }
+    .order-table .item-meta { font-size: 12px; color: #888888; margin-top: 2px; }
+
+    /* Totals Summary */
+    .totals-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 0 28px 0;
+    }
+    .totals-table td {
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+    .totals-table tr td:first-child {
+      color: #51545E;
+    }
+    .totals-table tr td:last-child {
+      text-align: right;
+      font-weight: 600;
+      color: #333333;
+    }
+    .totals-table tr + tr td { border-top: 1px solid #F0F0F5; }
+    .totals-table .grand-total td {
+      background-color: #F47B20;
+      color: #FFFFFF !important;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .totals-table .grand-total td:last-child { color: #FFFFFF !important; }
+
+    /* Host Note */
+    .host-note {
+      background-color: #F0F9FF;
+      border: 1px solid #BEE3F8;
+      border-left: 4px solid #3182CE;
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin: 0 0 28px 0;
+      font-size: 14px;
+      color: #2C5282;
+      line-height: 1.6;
+    }
+
+    /* CTA Section */
+    .cta-section { text-align: center; margin: 28px 0; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #E8E8EE;
+      margin: 28px 0;
+    }
+
+    .closing-text {
+      font-size: 14px;
+      color: #51545E;
+      line-height: 1.6;
+      margin: 0;
+    }
+    .signature {
+      font-size: 14px;
+      color: #333333;
+      font-weight: 600;
+      margin: 16px 0 0 0;
+    }
+
+    /* Footer */
+    .email-footer {
+      background-color: #2D2D2D;
+      padding: 24px 40px;
+      text-align: center;
+    }
+    .footer-company {
+      font-size: 14px;
+      font-weight: 700;
+      color: #F47B20;
+      margin: 0 0 6px 0;
+    }
+    .footer-tagline {
+      font-size: 12px;
+      color: #9B9B9B;
+      margin: 0 0 12px 0;
+    }
+    .footer-links {
+      font-size: 12px;
+      color: #7A7A7A;
+      margin: 0 0 10px 0;
+    }
+    .footer-links a {
+      color: #9B9B9B;
+      text-decoration: none;
+    }
+    .footer-copyright {
+      font-size: 11px;
+      color: #5A5A5A;
+      margin: 0;
+    }
+
+    @media only screen and (max-width: 620px) {
+      .email-wrapper { padding: 10px 0; }
+      .email-header, .email-hero, .email-body, .email-footer { padding-left: 20px !important; padding-right: 20px !important; }
+      .email-hero h1 { font-size: 20px; }
+      .order-table thead th, .order-table tbody td { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+    <div class="email-container">
+
+      <!-- Header -->
+      <div class="email-header">
+        <img src="{{LogoUrl}}" alt="PixelSoft Business Solutions" />
+      </div>
+
+      <!-- Hero Banner -->
+      <div class="email-hero">
+        <div class="hero-icon">✅</div>
+        <h1>Order Confirmed!</h1>
+        <p>Your food from {{RestaurantName}} is on its way</p>
+      </div>
+
+      <!-- Body -->
+      <div class="email-body">
+
+        <p class="greeting">Hello, {{UserName}}! 🎉</p>
+
+        <p class="intro-text">
+          Great news! The group order from <strong>{{RestaurantName}}</strong> has been confirmed.
+          Here's a breakdown of your items and your share of the costs.
+        </p>
+
+        <!-- Your Items -->
+        <p class="section-title">🛒 Your Order Items</p>
+        <table class="order-table">
+          <thead>
+            <tr>
+              <th style="border-radius: 4px 0 0 0;">Item</th>
+              <th>Qty</th>
+              <th>Unit Price</th>
+              <th style="border-radius: 0 4px 0 0;">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{ItemRows}}
+          </tbody>
+        </table>
+
+        <!-- Cost Summary -->
+        <p class="section-title">💰 Your Cost Summary</p>
+        <table class="totals-table">
+          <tr>
+            <td>Items Subtotal</td>
+            <td>{{ItemsSubtotal}}</td>
+          </tr>
+          <tr>
+            <td>Your Delivery Share</td>
+            <td>{{DeliveryShare}}</td>
+          </tr>
+          <tr class="grand-total">
+            <td>Your Total</td>
+            <td>{{GrandTotal}}</td>
+          </tr>
+        </table>
+
+        <!-- Host Note -->
+        <div class="host-note">
+          💳 <strong>Payment:</strong> Please pay your total of <strong>{{GrandTotal}}</strong> to the session host
+          <strong>{{HostName}}</strong>, who will handle the full payment.
+        </div>
+
+        <!-- CTA Button (commented out until frontend URL is available) -->
+        <!-- BUTTON DISABLED
+        <div class="cta-section">
+          <a href="#" style="display:inline-block;background-color:#27AE60;color:#FFFFFF;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:6px;">
+            View My Order &rarr;
+          </a>
+        </div>
+        BUTTON DISABLED -->
+
+        <hr class="divider" />
+
+        <p class="closing-text">
+          Sit tight — your food is being prepared! You'll get another notification once it's delivered.
+        </p>
+        <p class="signature">
+          Bon appétit! 🍽️<br />
+          The Food App Team
+        </p>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="email-footer">
+        <p class="footer-company">PixelSoft Business Solutions</p>
+        <p class="footer-tagline">Internal Food Ordering Platform</p>
+        <p class="footer-links">
+          <a href="#">Help &amp; Support</a> &nbsp;|&nbsp; <a href="#">Privacy Policy</a>
+        </p>
+        <p class="footer-copyright">&copy; {{Year}} PixelSoft Business Solutions. All rights reserved.</p>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

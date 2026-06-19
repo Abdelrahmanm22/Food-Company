@@ -25,6 +25,7 @@ namespace Food.Service
         private readonly ILogger<EmailService> _logger;
         private readonly UserManager<AppUser> _userManager;
         private readonly IBackgroundJobClient _backgroundJobClient;
+        private readonly IEmailTemplateService _templateService;
 
         // Delay between individual email jobs (seconds) — keeps within Mailtrap free tier rate limit
         private const int EmailIntervalSeconds = 60;
@@ -34,13 +35,15 @@ namespace Food.Service
             IUnitOfWork unitOfWork,
             ILogger<EmailService> logger,
             UserManager<AppUser> userManager,
-            IBackgroundJobClient backgroundJobClient)
+            IBackgroundJobClient backgroundJobClient,
+            IEmailTemplateService templateService)
         {
             _configuration = configuration;
             _unitOfWork = unitOfWork;
             _logger = logger;
             _userManager = userManager;
             _backgroundJobClient = backgroundJobClient;
+            _templateService = templateService;
         }
 
         public async Task SendEmailAsync(string to, string subject, string body, string userId)
@@ -65,14 +68,24 @@ namespace Food.Service
 
                 if (!string.IsNullOrEmpty(host) && !string.IsNullOrEmpty(portStr))
                 {
-                    using (var client = new SmtpClient(host, int.Parse(portStr))
+                    using var smtpClient = new SmtpClient(host, int.Parse(portStr))
                     {
                         Credentials = new NetworkCredential(username, password),
                         EnableSsl = true
-                    })
+                    };
+
+                    using var mailMessage = new MailMessage
                     {
-                        await client.SendMailAsync(from, to, subject, body);
-                    }
+                        From = new MailAddress(from!),
+                        Subject = subject,
+                        Body = body,
+                        IsBodyHtml = true,   // send as HTML
+                        BodyEncoding = Encoding.UTF8
+                    };
+                    mailMessage.To.Add(to);
+
+                    await smtpClient.SendMailAsync(mailMessage);
+
                     email.IsSent = true;
                     _logger.LogInformation("Email sent successfully to {To} with subject {Subject}", to, subject);
                 }
@@ -108,6 +121,7 @@ namespace Food.Service
         public async Task NotifyEmployeesForNewSessionAsync(string restaurantName, string? notes, string? excludeUserId = null)
         {
             var employees = await _userManager.GetUsersInRoleAsync(UserRoles.Employee);
+            var logoUrl = BuildLogoUrl();
             int delaySeconds = 2;
 
             foreach (var employee in employees)
@@ -115,14 +129,18 @@ namespace Food.Service
                 if (string.IsNullOrEmpty(employee.Email)) continue;
                 if (excludeUserId != null && employee.Id == excludeUserId) continue;
 
-                var subject = "New Food Session Started!";
-                var body = $"Hello {employee.UserName},\n\n" +
-                           $"A new food session has been started at {restaurantName}.\n" +
-                           $"Session Notes: {notes ?? "No notes provided"}\n\n" +
-                           $"Join the session and place your order before it closes!\n\n" +
-                           "Bon appétit!";
+                var subject = "New Food Session Started! 🍽️";
 
-                // Capture loop variables for the closure
+                var template = _templateService.LoadTemplate("NewSessionEmail.html");
+                var body = _templateService.PopulateTemplate(template, new Dictionary<string, string>
+                {
+                    ["UserName"]       = employee.UserName ?? "there",
+                    ["RestaurantName"] = restaurantName,
+                    ["SessionNotes"]   = string.IsNullOrWhiteSpace(notes) ? "No notes provided." : notes,
+                    ["LogoUrl"]        = logoUrl,
+                    ["Year"]           = DateTime.UtcNow.Year.ToString()
+                });
+
                 var recipientEmail = employee.Email;
                 var recipientId = employee.Id;
 
@@ -144,19 +162,25 @@ namespace Food.Service
             var session = await _unitOfWork.Repository<Session>().GetByIdAsync(sessionSpec);
             if (session == null) return;
 
+            var logoUrl = BuildLogoUrl();
             int delaySeconds = 0;
 
             foreach (var participant in session.SessionJoins)
             {
                 if (participant.User == null || string.IsNullOrEmpty(participant.User.Email)) continue;
 
-                var subject = "Food Session Cancelled";
-                var body = $"Hello {participant.User.UserName},\n\n" +
-                           $"The Food session for '{restaurantName}' has been cancelled by the host ({session.HostUser.UserName}).\n" +
-                           $"Any items in your cart for this session have been cleared.\n\n" +
-                           $"Best regards.";
+                var subject = "Food Session Cancelled ❌";
 
-                // Capture loop variables for the closure
+                var template = _templateService.LoadTemplate("SessionCancelledEmail.html");
+                var body = _templateService.PopulateTemplate(template, new Dictionary<string, string>
+                {
+                    ["UserName"]       = participant.User.UserName ?? "there",
+                    ["RestaurantName"] = restaurantName,
+                    ["HostName"]       = session.HostUser?.UserName ?? "the host",
+                    ["LogoUrl"]        = logoUrl,
+                    ["Year"]           = DateTime.UtcNow.Year.ToString()
+                });
+
                 var recipientEmail = participant.User.Email;
                 var recipientId = participant.UserId;
 
@@ -169,7 +193,7 @@ namespace Food.Service
         }
 
         /// <summary>
-        /// Orchestrator job — builds a personalized email per participant (with their items,
+        /// Orchestrator job — builds a personalized HTML email per participant (with their items,
         /// subtotal, delivery share) then schedules one SendEmailAsync job per participant
         /// with a staggered delay to stay within Mailtrap rate limits.
         /// </summary>
@@ -189,6 +213,7 @@ namespace Food.Service
                 .GroupBy(od => od.UserId)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
+            var logoUrl = BuildLogoUrl();
             int delaySeconds = 0;
 
             foreach (var participant in order.Session.SessionJoins)
@@ -199,23 +224,33 @@ namespace Food.Service
                 var itemsSubtotal = userDetails?.Sum(d => d.Price * d.Quantity) ?? 0;
                 var grandTotal = itemsSubtotal + deliveryCostPerPerson;
 
-                var itemLines = userDetails != null
+                // Build HTML table rows for items
+                var itemRowsHtml = userDetails != null && userDetails.Count > 0
                     ? string.Join("\n", userDetails.Select(d =>
-                        $"  - {d.Item?.Name ?? "Item"} x{d.Quantity} @ {d.Price:C} = {d.Price * d.Quantity:C}"))
-                    : "  (no items recorded)";
+                        $"<tr>" +
+                        $"<td style=\"padding:12px 14px;\"><span style=\"font-weight:600;color:#222222;\">{HtmlEncode(d.Item?.Name ?? "Item")}</span></td>" +
+                        $"<td style=\"padding:12px 14px;\">{d.Quantity}</td>" +
+                        $"<td style=\"padding:12px 14px;\">{d.Price:C}</td>" +
+                        $"<td style=\"padding:12px 14px;text-align:right;font-weight:600;\">{d.Price * d.Quantity:C}</td>" +
+                        $"</tr>"))
+                    : "<tr><td colspan=\"4\" style=\"padding:12px 14px;text-align:center;color:#888888;font-style:italic;\">No items recorded.</td></tr>";
 
-                var subject = $"Your Order from {order.Session.Restaurant.Name} is Confirmed!";
-                var body =
-                    $"Hello {participant.User.UserName},\n\n" +
-                    $"Great news! The order for '{order.Session.Restaurant.Name}' has been confirmed.\n\n" +
-                    $"Your Items:\n{itemLines}\n\n" +
-                    $"Items Subtotal:       {itemsSubtotal:C}\n" +
-                    $"Your Delivery Share:  {deliveryCostPerPerson:C}\n" +
-                    $"Your Total:           {grandTotal:C}\n\n" +
-                    $"The host ({order.Session.HostUser?.UserName}) will collect the full payment.\n\n" +
-                    "Bon appétit!";
+                var subject = $"Your Order from {order.Session.Restaurant.Name} is Confirmed! ✅";
 
-                // Capture loop variables for the closure
+                var template = _templateService.LoadTemplate("OrderConfirmedEmail.html");
+                var body = _templateService.PopulateTemplate(template, new Dictionary<string, string>
+                {
+                    ["UserName"]       = participant.User.UserName ?? "there",
+                    ["RestaurantName"] = order.Session.Restaurant.Name,
+                    ["ItemRows"]       = itemRowsHtml,
+                    ["ItemsSubtotal"]  = itemsSubtotal.ToString("C"),
+                    ["DeliveryShare"]  = deliveryCostPerPerson.ToString("C"),
+                    ["GrandTotal"]     = grandTotal.ToString("C"),
+                    ["HostName"]       = order.Session.HostUser?.UserName ?? "the host",
+                    ["LogoUrl"]        = logoUrl,
+                    ["Year"]           = DateTime.UtcNow.Year.ToString()
+                });
+
                 var recipientEmail = participant.User.Email;
                 var recipientId = participant.UserId;
 
@@ -237,21 +272,25 @@ namespace Food.Service
             var order = await _unitOfWork.Repository<Order>().GetByIdAsync(orderSpec);
             if (order == null) return;
 
+            var logoUrl = BuildLogoUrl();
             int delaySeconds = 0;
 
             foreach (var participant in order.Session.SessionJoins)
             {
                 if (participant.User == null || string.IsNullOrEmpty(participant.User.Email)) continue;
 
-                var subject = $"Your food from {order.Session.Restaurant.Name} has arrived!";
-                var body =
-                    $"Hello {participant.User.UserName},\n\n" +
-                    $"Your order from '{order.Session.Restaurant.Name}' has been delivered!\n\n" +
-                    $"Please contact the host ({order.Session.HostUser?.UserName}) " +
-                    $"or come to collect your food.\n\n" +
-                    "Enjoy your meal!";
+                var subject = $"Your food from {order.Session.Restaurant.Name} has arrived! 🛵";
 
-                // Capture loop variables for the closure
+                var template = _templateService.LoadTemplate("OrderDeliveredEmail.html");
+                var body = _templateService.PopulateTemplate(template, new Dictionary<string, string>
+                {
+                    ["UserName"]       = participant.User.UserName ?? "there",
+                    ["RestaurantName"] = order.Session.Restaurant.Name,
+                    ["HostName"]       = order.Session.HostUser?.UserName ?? "the host",
+                    ["LogoUrl"]        = logoUrl,
+                    ["Year"]           = DateTime.UtcNow.Year.ToString()
+                });
+
                 var recipientEmail = participant.User.Email;
                 var recipientId = participant.UserId;
 
@@ -262,5 +301,20 @@ namespace Food.Service
                 delaySeconds += EmailIntervalSeconds;
             }
         }
+
+        // ──────────────────────────────────────────────────────────────
+        // Private helpers
+        // ──────────────────────────────────────────────────────────────
+
+        /// <summary>Builds the absolute URL for the company logo using ApiBaseURL from configuration.</summary>
+        private string BuildLogoUrl()
+        {
+            var baseUrl = _configuration["ApiBaseURL"]?.TrimEnd('/') ?? string.Empty;
+            return $"{baseUrl}/images/pixelsoft-logo.png";
+        }
+
+        /// <summary>Minimal HTML encoding to safely embed user-supplied strings inside HTML.</summary>
+        private static string HtmlEncode(string value)
+            => System.Net.WebUtility.HtmlEncode(value);
     }
 }
